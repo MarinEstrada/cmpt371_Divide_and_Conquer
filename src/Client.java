@@ -14,7 +14,7 @@ public class Client extends JFrame {
     DataInputStream in;
     DataOutputStream out;
 
-    public void clientGUI(int clientID) {
+    private void clientGUI(int clientID) {
         board = new int[4][4];
         initializeBoard();
 
@@ -29,7 +29,7 @@ public class Client extends JFrame {
         setVisible(true);
     }
 
-    public void initializeBoard() {
+    private void initializeBoard() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 board[i][j] = 0;
@@ -37,7 +37,7 @@ public class Client extends JFrame {
         }
     }
 
-    public void updateBoard() {
+    private void updateBoard() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 JPanel cell = new JPanel();
@@ -74,6 +74,11 @@ public class Client extends JFrame {
         }
     }
 
+    private void printGameResult(String result) {
+        JOptionPane.showMessageDialog(this, result);
+        System.exit(0);
+    }
+
     public void connectServer() {
         try {
             client = new Socket("localhost", 7070);
@@ -96,17 +101,31 @@ public class Client extends JFrame {
         public void run() {
             try {
                 while (true) {
-                    int row = in.readInt();
-                    int col = in.readInt();
-                    int clientID = in.readInt();
+                    int currentRow = in.readInt();
+                    int currentCol = in.readInt();
+                    int currentClientID = in.readInt();
 
-                    board[row][col] = clientID;
+                    int winner = in.readInt();
+
+                    board[currentRow][currentCol] = currentClientID;
 
                     SwingUtilities.invokeLater(() -> {
+                        // fill board
                         Component[] components = boardPanel.getComponents();
-                        int index = row * 4 + col;
+                        int index = currentRow * 4 + currentCol;
                         JPanel cell = (JPanel) components[index];
-                        cell.setBackground(clientID == 1 ? Color.RED : Color.BLUE);
+                        cell.setBackground(currentClientID == 1 ? Color.RED : Color.BLUE);
+
+                        // winner
+                        if (winner != 0) {
+                            if (winner == clientID) {
+                                printGameResult("You win!");
+                            } else if (winner == -1) {
+                                printGameResult("Draw!");
+                            } else {
+                                printGameResult("You lose!");
+                            }
+                        }
                     });
                 }
             } catch (IOException ex) {
@@ -123,5 +142,3 @@ public class Client extends JFrame {
         new Thread(client.new SyncServer()).start();
     }
 }
-
-
