@@ -109,6 +109,7 @@ public class Client extends JFrame {
         } else {
             //clear the cell
             System.out.println("Removing drawnlines");
+            coloredArea[row][col] = 0;
             // cell.removeAll();
             // cell.revalidate();
             // cell.repaint();
