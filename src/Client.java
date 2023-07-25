@@ -111,9 +111,9 @@ public class Client extends JFrame {
             //clear the cell
             System.out.println("Removing drawnlines");
             coloredArea[row][col] = 0;
-            // cell.removeAll();
-            // cell.revalidate();
-            // cell.repaint();
+            cell.removeAll();
+            cell.revalidate();
+            cell.repaint();
             isFilled = -1;
             pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
         }
