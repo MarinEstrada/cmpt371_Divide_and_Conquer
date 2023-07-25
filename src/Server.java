@@ -15,10 +15,12 @@ public class Server {
 
     private int[][] board;
 
+    private static final int NUM_CELLS = 4; // the number of cells in a row/column
+
     public void newServer() {
         numClients = 0;
         maxClients = 2;
-        board = new int[4][4];
+        board = new int[NUM_CELLS][NUM_CELLS];
 
         try {
             server = new ServerSocket(7070);
@@ -58,23 +60,28 @@ public class Server {
         }
     }
 
-    private void broadcastUpdate(int row, int col, int clientID) {
+    private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
         if (client1 != null && client2 != null) {
             try {
                 // board
-                board[row][col] = clientID;
+                board[row][col] = isFilled;
+
                 out1.writeInt(row);
                 out1.writeInt(col);
                 out1.writeInt(clientID);
-//                out1.flush();
+                out1.writeInt(x);
+                out1.writeInt(y);
+                out1.writeInt(isFilled);
+
                 out2.writeInt(row);
                 out2.writeInt(col);
                 out2.writeInt(clientID);
-//                out2.flush();
+                out2.writeInt(x);
+                out2.writeInt(y);
+                out2.writeInt(isFilled);
 
                 // Check if there is a winner
                 int winner = checkWinner();
-                System.out.println("Winner: " + winner);
                 out1.writeInt(winner);
                 out2.writeInt(winner);
 
@@ -88,8 +95,8 @@ public class Server {
 
     private int checkWinner() {
         // check if the board is full
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col ++) {
+        for (int row = 0; row < NUM_CELLS; row++) {
+            for (int col = 0; col < NUM_CELLS; col++) {
                 if (board[row][col] == 0) { // the board is not full, no winner yet
                     return 0;
                 }
@@ -99,8 +106,8 @@ public class Server {
         // check if there is a winner
         int client1Count = 0;
         int client2Count = 0;
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col++) {
+        for (int row = 0; row < NUM_CELLS; row++) {
+            for (int col = 0; col < NUM_CELLS; col++) {
                 if (board[row][col] == 1) {
                     client1Count++;
                 } else if (board[row][col] == 2) {
@@ -133,8 +140,11 @@ public class Server {
                     int row = in.readInt();
                     int col = in.readInt();
                     int clientID = in.readInt();
+                    int x = in.readInt();
+                    int y = in.readInt();
+                    int isFilled = in.readInt();
 
-                    broadcastUpdate(row, col, clientID);
+                    broadcastUpdate(row, col, clientID, x, y, isFilled);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
