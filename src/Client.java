@@ -106,6 +106,7 @@ public class Client extends JFrame {
         int isFilled = 0;
         if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) {
             isFilled = clientID;
+            pixelInfoList.add(new int[]{row, col, clientID, x, y, isFilled});
         } else {
             //clear the cell
             System.out.println("Removing drawnlines");
@@ -114,9 +115,10 @@ public class Client extends JFrame {
             // cell.revalidate();
             // cell.repaint();
             isFilled = -1;
+            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
         }
 
-        pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
+        // pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
     }
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
@@ -223,15 +225,15 @@ public class Client extends JFrame {
                         // draw on board/cell
                         JPanel cell = (JPanel) boardPanel.getComponent(currentRow * NUM_CELLS + currentCol);
                         Graphics boardImage = cell.getGraphics();
-                        boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
-                        boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
-                        // Color brushColor = null;
-                        // if(currentClientID == 1) brushColor = CLIENT1_COLOR;
-                        // else if(currentClientID == 2) brushColor = CLIENT2_COLOR;
-                        // if(brushColor != null) {
-                        //     boardImage.setColor(brushColor);
-                        //     boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
-                        // }
+                        // boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
+                        // boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
+                        Color brushColor = null;
+                        if(currentClientID == 1) brushColor = CLIENT1_COLOR;
+                        else if(currentClientID == 2) brushColor = CLIENT2_COLOR;
+                        if(brushColor != null) {
+                            boardImage.setColor(brushColor);
+                            boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
+                        }
 
                         // fill cell if passed threshold
                         // if did player released before threashold, clear cell
