@@ -27,6 +27,9 @@ public class Client extends JFrame {
     private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
     private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
 
+    // Add a button to clear/reset the board
+    private JButton clearButton;
+
     private void clientGUI(int clientID) {
         // Initialize the board
         board = new int[NUM_CELLS][NUM_CELLS];
@@ -53,6 +56,15 @@ public class Client extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         boardPanel = new JPanel(new GridLayout(NUM_CELLS, NUM_CELLS, 2, 2));
         add(boardPanel);
+    
+        // Add a clear button to the GUI
+        clearButton = new JButton("Clear Board");
+        clearButton.addActionListener(e -> {
+            clearBoard();
+            clearBoardPanel();
+            updateBoard();
+        });
+        add(clearButton, BorderLayout.SOUTH);
 
         updateBoard();
 
@@ -89,6 +101,27 @@ public class Client extends JFrame {
             }
         }
     }
+
+        private void clearBoard() {
+        for (int i = 0; i < NUM_CELLS; i++) {
+            for (int j = 0; j < NUM_CELLS; j++) {
+                board[i][j] = 0;
+                coloredArea[i][j] = 0;
+                for (int x = 0; x < BOARD_SIZE; x++) {
+                    for (int y = 0; y < BOARD_SIZE; y++) {
+                        coloredPixels[i][j][x][y] = false;
+                    }
+                }
+            }
+        }
+    }
+
+     private void clearBoardPanel() {
+        boardPanel.removeAll();
+        boardPanel.revalidate();
+        boardPanel.repaint();
+    }
+
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
         if (board[row][col] == 0 || board[row][col] == clientID) {
