@@ -196,9 +196,6 @@ public class Client extends JFrame {
                 out.writeInt(pixelInfo[0]); // row
                 out.writeInt(pixelInfo[1]); // col
                 out.writeInt(pixelInfo[2]); // clientID
-                out.writeInt(pixelInfo[3]); // x
-                out.writeInt(pixelInfo[4]); // y
-                out.writeInt(pixelInfo[5]); // isFilled
             }
             out.flush(); // Flush the output stream to ensure all data is sent
             pixelInfoList.clear(); // Clear the pixelInfoList
@@ -214,9 +211,6 @@ public class Client extends JFrame {
                     int currentRow = in.readInt();
                     int currentCol = in.readInt();
                     int currentClientID = in.readInt();
-                    int currentX = in.readInt();
-                    int currentY = in.readInt();
-                    int currentIsFilled = in.readInt();
                     int winner = in.readInt();
 
                     board[currentRow][currentCol] = currentClientID;
@@ -225,25 +219,15 @@ public class Client extends JFrame {
                         // draw on board/cell
                         JPanel cell = (JPanel) boardPanel.getComponent(currentRow * NUM_CELLS + currentCol);
                         Graphics boardImage = cell.getGraphics();
+
                         // boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
-                        // boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
+                        // boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);\
+
                         Color brushColor = null;
                         if(currentClientID == 1) brushColor = CLIENT1_COLOR;
                         else if(currentClientID == 2) brushColor = CLIENT2_COLOR;
                         if(brushColor != null) {
                             boardImage.setColor(brushColor);
-                            boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
-                        }
-
-                        // fill cell if passed threshold
-                        // if did player released before threashold, clear cell
-                        if (currentIsFilled == -1) {
-                            System.out.println("SYNC Removing drawnlines");
-                            cell.removeAll();
-                            cell.revalidate();
-                            cell.repaint();
-                        }
-                        else if (currentIsFilled != 0) {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
                         }
 

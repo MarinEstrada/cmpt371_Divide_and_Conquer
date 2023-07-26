@@ -60,25 +60,19 @@ public class Server {
         }
     }
 
-    private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
+    private void broadcastUpdate(int row, int col, int clientID) {
         if (client1 != null && client2 != null) {
             try {
                 // board
-                board[row][col] = isFilled;
+                board[row][col] = clientID;
 
                 out1.writeInt(row);
                 out1.writeInt(col);
                 out1.writeInt(clientID);
-                out1.writeInt(x);
-                out1.writeInt(y);
-                out1.writeInt(isFilled);
 
                 out2.writeInt(row);
                 out2.writeInt(col);
                 out2.writeInt(clientID);
-                out2.writeInt(x);
-                out2.writeInt(y);
-                out2.writeInt(isFilled);
 
                 // Check if there is a winner
                 int winner = checkWinner();
@@ -139,12 +133,8 @@ public class Server {
                 while (true) {
                     int row = in.readInt();
                     int col = in.readInt();
-                    int clientID = in.readInt();
-                    int x = in.readInt();
-                    int y = in.readInt();
-                    int isFilled = in.readInt();
 
-                    broadcastUpdate(row, col, clientID, x, y, isFilled);
+                    broadcastUpdate(row, col, clientID);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
