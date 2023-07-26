@@ -3,23 +3,20 @@ import java.net.*;
 
 public class Server {
     private ServerSocket server;
-    private int numClients;
-    private int maxClients;
 
     private Socket client1;
     private Socket client2;
-    private DataInputStream in1;
-    private DataInputStream in2;
     private DataOutputStream out1;
     private DataOutputStream out2;
 
     private int[][] board;
+    private int numClients;
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
+    private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
     public void newServer() {
         numClients = 0;
-        maxClients = 2;
         board = new int[NUM_CELLS][NUM_CELLS];
 
         try {
@@ -33,7 +30,7 @@ public class Server {
 
     public void connectClients() {
         try {
-            while (numClients < maxClients) {
+            while (numClients < MAX_CLIENTS) {
                 Socket client = server.accept();
                 numClients++;
 
@@ -44,11 +41,9 @@ public class Server {
 
                 if (numClients == 1) {
                     client1 = client;
-                    in1 = in;
                     out1 = out;
                 } else {
                     client2 = client;
-                    in2 = in;
                     out2 = out;
                 }
 
@@ -126,11 +121,9 @@ public class Server {
     }
 
     private class SyncClients implements Runnable {
-        private int clientID;
         private DataInputStream in;
 
         public SyncClients(int clientID, DataInputStream in) {
-            this.clientID = clientID;
             this.in = in;
         }
 

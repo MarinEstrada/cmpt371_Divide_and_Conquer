@@ -19,6 +19,8 @@ public class Client extends JFrame {
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
+    private boolean isGameTerminated = false;
+
     // constants
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
     private static final int BOARD_SIZE = 600; // the width/height of the board
@@ -240,7 +242,8 @@ public class Client extends JFrame {
                         }
 
                         // announce winner
-                        if (winner != 0) {
+                        if (winner != 0 && !isGameTerminated) {
+                            isGameTerminated = true;
                             if (winner == clientID) {
                                 printGameResult("You win!");
                             } else if (winner == -1) {
