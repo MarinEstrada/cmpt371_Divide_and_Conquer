@@ -27,7 +27,29 @@ public class Client extends JFrame {
     private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
     private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
 
+
+    private void startScreen(){
+        JPanel panel = new JPanel();
+        panel.add(new JLabel("Start Screen"));
+
+        JButton startButton = new JButton("Start");
+        panel.add(startButton);
+
+        JDialog dialog = new JDialog(this, "Deny and Conquer", true);
+        dialog.getContentPane().add(panel);
+        dialog.setLocationRelativeTo(this);
+        startButton.addActionListener(e -> {
+            dialog.dispose();
+        });
+        dialog.setVisible(true);
+    }
+
+
     private void clientGUI(int clientID) {
+        startScreen();
+        SwingUtilities.invokeLater(() -> {
+            setVisible(false);
+        });
         // Initialize the board
         board = new int[NUM_CELLS][NUM_CELLS];
         for (int i = 0; i < NUM_CELLS; i++) {
@@ -223,6 +245,7 @@ public class Client extends JFrame {
     public static void main(String[] args) throws IOException {
         Client client = new Client();
         client.connectServer();
+
         client.clientGUI(client.clientID);
 
         new Thread(client.new SyncServer()).start();

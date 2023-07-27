@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.*;
+import java.util.concurrent.locks.ReentrantLock;
+
 
 public class Server {
     private ServerSocket server;
@@ -16,6 +18,9 @@ public class Server {
     private int[][] board;
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
+
+    private ReentrantLock mutex = new ReentrantLock();
+
 
     public void newServer() {
         numClients = 0;
@@ -63,6 +68,7 @@ public class Server {
     private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
         if (client1 != null && client2 != null) {
             try {
+//                mutex.lock();
                 // board
                 board[row][col] = isFilled;
 
@@ -79,7 +85,7 @@ public class Server {
                 out2.writeInt(x);
                 out2.writeInt(y);
                 out2.writeInt(isFilled);
-
+//                mutex.unlock();
                 // Check if there is a winner
                 int winner = checkWinner();
                 out1.writeInt(winner);
