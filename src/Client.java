@@ -19,9 +19,11 @@ public class Client extends JFrame {
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
+    private boolean isGameTerminated = false;
+
     // constants
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
-    private static final int BOARD_SIZE = 400; // the width/height of the board
+    private static final int BOARD_SIZE = 600; // the width/height of the board
     private static final double COLOR_THRESHOLD = 0.3; // the threshold: filled if >= COLOR_THRESHOLD% of the cell is colored
     private static final int BRUSH_SIZE = 10; // the size of the brush
     private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
@@ -29,6 +31,11 @@ public class Client extends JFrame {
 
     // Add a button to clear/reset the board
     private JButton clearButton;
+
+    // sound effects for box conquer and game ending
+    private final String CONQUER_SOUND_PATH = "conquer_sound.wav";
+    private final String GAME_END_SOUND_PATH = "game_end_sound.wav";
+    private final SoundPlayer soundPlayer = new SoundPlayer();
 
     private void clientGUI(int clientID) {
         // Initialize the board
@@ -56,15 +63,8 @@ public class Client extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         boardPanel = new JPanel(new GridLayout(NUM_CELLS, NUM_CELLS, 2, 2));
         add(boardPanel);
-    
-        // Add a clear button to the GUI
-        clearButton = new JButton("Clear Board");
-        clearButton.addActionListener(e -> {
-            clearBoard();
-            clearBoardPanel();
-            updateBoard();
-        });
-        add(clearButton, BorderLayout.SOUTH);
+        setLocationRelativeTo(null); // board appears in middle of screen
+        setResizable(false);
 
         updateBoard();
 
@@ -86,6 +86,11 @@ public class Client extends JFrame {
                     public void mousePressed(MouseEvent e) {
                         paintCell(cell, row, col, e.getX(), e.getY());
                     }
+
+                    @Override
+                    public void mouseReleased(MouseEvent e) {
+                        checkThreshold(cell, row, col, e.getX(), e.getY());
+                    }
                 });
 
                 // Add a MouseMotionListener to the JPanel (for dragging)
@@ -102,29 +107,29 @@ public class Client extends JFrame {
         }
     }
 
-        private void clearBoard() {
-        for (int i = 0; i < NUM_CELLS; i++) {
-            for (int j = 0; j < NUM_CELLS; j++) {
-                board[i][j] = 0;
-                coloredArea[i][j] = 0;
-                for (int x = 0; x < BOARD_SIZE; x++) {
-                    for (int y = 0; y < BOARD_SIZE; y++) {
-                        coloredPixels[i][j][x][y] = false;
-                    }
-                }
+    private void checkThreshold(JPanel cell, int row, int col, int x, int y) {
+        int cellWidth = cell.getWidth();
+        int cellHeight = cell.getHeight();
+        int cellArea = cellWidth * cellHeight;
+
+        // Check if the cell is filled >= threshold
+        if (board[row][col] == 0 || board[row][col] == -1) {
+            int isFilled = 0;
+            if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
+                isFilled = clientID;
+            } else { // if not filled, clear cell
+                coloredArea[row][col] = 0;
+                cell.removeAll();
+                cell.revalidate();
+                cell.repaint();
+                isFilled = -1;
             }
+            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
-     private void clearBoardPanel() {
-        boardPanel.removeAll();
-        boardPanel.revalidate();
-        boardPanel.repaint();
-    }
-
-
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
-        if (board[row][col] == 0 || board[row][col] == clientID) {
+        if (board[row][col] == 0 || board[row][col] == -1) {
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
@@ -157,7 +162,7 @@ public class Client extends JFrame {
 
             System.out.println("coloredArea: " + coloredArea[row][col] + ", cellArea: " + cellArea);
 
-            // Check if the cell is filled >= threshold
+            // // Check if the cell is filled >= threshold
             int isFilled = 0;
             if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) {
                 isFilled = clientID;
@@ -169,6 +174,8 @@ public class Client extends JFrame {
     }
 
     private void printGameResult(String result) {
+        // Play game end sound
+        playSound(GAME_END_SOUND_PATH);    
         JOptionPane.showMessageDialog(this, result);
         System.exit(0);
     }
@@ -221,7 +228,7 @@ public class Client extends JFrame {
                     int currentIsFilled = in.readInt();
                     int winner = in.readInt();
 
-                    board[currentRow][currentCol] = currentClientID;
+                    board[currentRow][currentCol] = currentIsFilled;
 
                     SwingUtilities.invokeLater(() -> {
                         // draw on board/cell
@@ -230,19 +237,36 @@ public class Client extends JFrame {
                         boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
                         boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
 
+                        
+                        // if player released before threshold, clear cell
+                        if (currentIsFilled == -1) {
+                            System.out.println("SYNC Removing drawnlines");
+                            cell.removeAll();
+                            cell.revalidate();
+                            cell.repaint();
+
+                            // Play sound effect for box conquer
+                            playSound(CONQUER_SOUND_PATH);
+                        }
+                        
                         // fill cell if passed threshold
-                        if (currentIsFilled != 0) {
+                        if (currentIsFilled != 0 && currentIsFilled != -1) {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
+
+
                         }
 
                         // announce winner
-                        if (winner != 0) {
+                        if (winner != 0 && !isGameTerminated) {
+                            isGameTerminated = true;
                             if (winner == clientID) {
                                 printGameResult("You win!");
                             } else if (winner == -1) {
                                 printGameResult("Draw!");
                             } else {
                                 printGameResult("You lose!");
+                                // Play game end sound
+                                //playSound(GAME_END_SOUND_PATH);
                             }
                         }
                     });
@@ -251,6 +275,17 @@ public class Client extends JFrame {
                 ex.printStackTrace();
             }
         }
+    }
+
+    // method to play sound effects
+    private void playSound(String soundPath) {
+        new Thread(() -> {
+            try {
+                soundPlayer.playSound(soundPath);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     public static void main(String[] args) throws IOException {
