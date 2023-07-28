@@ -14,18 +14,18 @@
             "type": "java",
             "name": "Launch Server",
             "request": "launch",
-            "mainClass": "server.ServerMainClass",
+            "mainClass": "main.server.Server",
             "projectName": "cmpt371_divide_and_conquer",
-            "cwd": "${workspaceFolder}/src/server",
+            "cwd": "${workspaceFolder}/src/main/server",
             "args": ""
           },
           {
             "type": "java",
             "name": "Launch Client",
             "request": "launch",
-            "mainClass": "client.ClientMainClass",
+            "mainClass": "main.client.Client",
             "projectName": "cmpt371_divide_and_conquer",
-            "cwd": "${workspaceFolder}/src/client",
+            "cwd": "${workspaceFolder}/src/main/client",
             "args": ""
           }
     ]

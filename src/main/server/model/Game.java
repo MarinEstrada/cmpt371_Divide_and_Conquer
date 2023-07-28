@@ -1,5 +1,7 @@
 package main.server.model;
 
+import java.io.IOException;
+
 public class Game {
     public static final int MAX_PLAYERS = 2;
     private final Player[] players;
@@ -44,7 +46,7 @@ public class Game {
     }
 
     // Update the game state based on a player's move
-    public void makeMove(int row, int col, Player player) {
+    public void makeMove(int row, int col, Player player) throws IOException {
         if (isValidMove(row, col)) {
             gameBoard.setCell(row, col, player.getId());
             
@@ -53,7 +55,7 @@ public class Game {
                 setWinner(player.getId());
             }
         } else {
-            throw new InvalidMoveException(); // Create this exception to handle invalid moves
+            throw new IOException(); // Create this exception to handle invalid moves
         }
     }
 }
