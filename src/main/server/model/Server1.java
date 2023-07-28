@@ -15,8 +15,7 @@ public class Server1 {
     private DataOutputStream out2;
 
     // What the server keeps track of
-    
-    private int[][] board;
+    private Game game;
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
 
@@ -24,7 +23,7 @@ public class Server1 {
     public void newServer() {
         numClients = 0;
         maxClients = 2;
-        board = new int[NUM_CELLS][NUM_CELLS];
+        game = new Game();
 
         try {
             server = new ServerSocket(7070);
@@ -77,7 +76,7 @@ public class Server1 {
         if (client1 != null && client2 != null) {
             try {
                 // board
-                board[row][col] = clientID;
+                game.makeMove(row, col, null); = clientID;
 
                 out1.writeInt(row);
                 out1.writeInt(col);
