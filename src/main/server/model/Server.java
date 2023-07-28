@@ -1,3 +1,4 @@
+package main.server.model;
 import java.io.*;
 import java.net.*;
 
@@ -17,6 +18,7 @@ public class Server {
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
 
+    // Instantiates the server
     public void newServer() {
         numClients = 0;
         maxClients = 2;
@@ -31,10 +33,12 @@ public class Server {
         }
     }
 
+    // Loops until at most, 2 clients are connected and attaches them to the server for inputs
     public void connectClients() {
         try {
             while (numClients < maxClients) {
-                Socket client = server.accept();
+                Socket client = server.accept(); // Blocks the while loop until a client ACTUALLY joins
+
                 numClients++;
 
                 DataInputStream in = new DataInputStream(client.getInputStream());
@@ -52,14 +56,21 @@ public class Server {
                     out2 = out;
                 }
 
-                new Thread(new SyncClients(numClients, in)).start();
+                new Thread(new SyncClients(numClients, in)).start(); // Attaches the client to its own thread for processing
             }
+
+            /*
+            Once the numClients have been connected, this loop stops looking for clients and will not be run again
+            That is, if a client loses connection, it cannot reconnect because the server has stopped connecting
+            clients and the game is effectively over.
+            */
         } catch (IOException e) {
             System.out.println("Accept failed: 7070");
             System.exit(-1);
         }
     }
 
+    // 
     private void broadcastUpdate(int row, int col, int clientID) {
         if (client1 != null && client2 != null) {
             try {

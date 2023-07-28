@@ -1,3 +1,4 @@
+package main.client.model;
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -7,7 +8,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Client extends JFrame {
+public class Client1 extends JFrame {
     private Socket client;
     private int clientID;
     DataInputStream in;
@@ -26,7 +27,7 @@ public class Client extends JFrame {
     private static final int BRUSH_SIZE = 10; // the size of the brush
     private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
     private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
-
+    
     private void clientGUI(int clientID) {
         // Initialize the board
         board = new int[NUM_CELLS][NUM_CELLS];
@@ -250,7 +251,7 @@ public class Client extends JFrame {
     }
 
     public static void main(String[] args) throws IOException {
-        Client client = new Client();
+        Client1 client = new Client1();
         client.connectServer();
         client.clientGUI(client.clientID);
 
@@ -260,6 +261,7 @@ public class Client extends JFrame {
         Timer timer = new Timer(100, e -> {
             client.sendPixelInfoListToServer();
         });
+
         timer.start();
     }
 }
