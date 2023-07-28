@@ -1,0 +1,32 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch Server",
+            "request": "launch",
+            "mainClass": "server.ServerMainClass",
+            "projectName": "cmpt371_divide_and_conquer",
+            "cwd": "${workspaceFolder}/src/server",
+            "args": ""
+          },
+          {
+            "type": "java",
+            "name": "Launch Client",
+            "request": "launch",
+            "mainClass": "client.ClientMainClass",
+            "projectName": "cmpt371_divide_and_conquer",
+            "cwd": "${workspaceFolder}/src/client",
+            "args": ""
+          }
+    ]
+}
