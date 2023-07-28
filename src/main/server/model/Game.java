@@ -3,7 +3,7 @@ package main.server.model;
 public class Game {
     public static final int MAX_PLAYERS = 2;
     private final Player[] players;
-    private int[][] gameBoard;
+    private GameBoard gameBoard;
 
     // 0 = no winner
     // 1 = player 1
@@ -13,16 +13,17 @@ public class Game {
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
 
-    public Game(Player player1, Player player2) {
-        this.gameBoard = new int[NUM_CELLS][NUM_CELLS]; // Assume this is your game board class
+    public Game() {
+        this.gameBoard = new GameBoard(NUM_CELLS); // Assume this is your game board class
         this.winner = 0;
+        this.players = new Player[MAX_PLAYERS];
     }
 
     public Player getPlayer(int playerID) {
         if (playerID < MAX_PLAYERS && playerID >= 0) {
             return players[playerID];
         } else {
-            return NULL;
+            return null;
         }
     }
 
@@ -38,23 +39,14 @@ public class Game {
         this.winner = winner;
     }
 
-    public Player getCurrentPlayer() {
-        return this.currentPlayer;
+    public boolean isValidMove(int row, int col) {
+        return gameBoard.getCell(row, col).isOwned();
     }
 
-    public void switchTurns() {
-        if (currentPlayer.equals(player1)) {
-            currentPlayer = player2;
-        } else {
-            currentPlayer = player1;
-        }
-    }
-    
     // Update the game state based on a player's move
     public void makeMove(int row, int col, Player player) {
-        if (currentPlayer.equals(player) && gameBoard.isValidMove(row, col)) {
+        if (isValidMove(row, col)) {
             gameBoard.setCell(row, col, player.getId());
-            switchTurns();
             
             // Check if the game is over
             if (gameBoard.checkWin(player)) {
