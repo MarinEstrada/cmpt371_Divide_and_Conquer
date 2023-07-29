@@ -14,6 +14,8 @@ public class Server {
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
     private static final int MAX_CLIENTS = 2; // the maximum number of clients
+    private static final int TOTAL_CELLS = NUM_CELLS*NUM_CELLS;
+    private int cells_captured = 0; // count of number of cells actually filled
 
     public void newServer() {
         numClients = 0;
@@ -89,14 +91,19 @@ public class Server {
     }
 
     private int checkWinner() {
-        // check if the board is full
-        for (int row = 0; row < NUM_CELLS; row++) {
-            for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0) { // the board is not full, no winner yet
-                    return 0;
-                }
-            }
-        }
+        // // check if the board is full
+        // for (int row = 0; row < NUM_CELLS; row++) {
+        //     for (int col = 0; col < NUM_CELLS; col++) {
+        //         if (board[row][col] == 0) { // the board is not full, no winner yet
+        //             return 0;
+        //         }
+        //     }
+        // }
+
+        System.out.println("Current number of caputured cells: " + cells_captured);
+        
+        //if board not full keep going
+        if (cells_captured < TOTAL_CELLS) return 0;
 
         // check if there is a winner
         int client1Count = 0;
@@ -136,6 +143,10 @@ public class Server {
                     int x = in.readInt();
                     int y = in.readInt();
                     int isFilled = in.readInt();
+                    int isCaptured = in.readInt();
+
+                    cells_captured += isCaptured;
+                    System.out.println("was cell captured?" + isCaptured);
 
                     broadcastUpdate(row, col, clientID, x, y, isFilled);
                 }

@@ -107,8 +107,10 @@ public class Client extends JFrame {
         // Check if the cell is filled >= threshold
         if (board[row][col] == 0 || board[row][col] == -1) {
             int isFilled = 0;
+            int isCaptured = 0;
             if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
+                isCaptured =1;
             } else { // if not filled, clear cell
                 coloredArea[row][col] = 0;
                 cell.removeAll();
@@ -116,7 +118,7 @@ public class Client extends JFrame {
                 cell.repaint();
                 isFilled = -1;
             }
-            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
+            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled, isCaptured});
         }
     }
 
@@ -161,7 +163,7 @@ public class Client extends JFrame {
             }
 
             // Add pixel information to the list, to be sent to the server
-            pixelInfoList.add(new int[]{row, col, clientID, x, y, isFilled});
+            pixelInfoList.add(new int[]{row, col, clientID, x, y, isFilled, 0}); //0 is placeholder for isCaptured
         }
     }
 
@@ -198,6 +200,7 @@ public class Client extends JFrame {
                 out.writeInt(pixelInfo[3]); // x
                 out.writeInt(pixelInfo[4]); // y
                 out.writeInt(pixelInfo[5]); // isFilled
+                out.writeInt(pixelInfo[6]); // isCaptured
             }
             out.flush(); // Flush the output stream to ensure all data is sent
             pixelInfoList.clear(); // Clear the pixelInfoList
