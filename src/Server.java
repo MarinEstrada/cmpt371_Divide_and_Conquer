@@ -92,7 +92,7 @@ public class Server {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0) { // the board is not full, no winner yet
+                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
                     return 0;
                 }
             }
