@@ -115,6 +115,11 @@ public class Client extends JFrame {
                 cell.revalidate();
                 cell.repaint();
                 isFilled = -1;
+                for (int i = 0; i < cellWidth; i++) { // flush coloredPixels
+                    for (int j = 0; j < cellHeight; j++) {
+                        coloredPixels[row][col][i][j] = false;
+                    }
+                }
             }
             pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
         }
