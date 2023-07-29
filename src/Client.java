@@ -6,6 +6,8 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.imageio.ImageIO; // Add the import statement for ImageIO
+
 
 public class Client extends JFrame {
     private Socket client;
@@ -37,6 +39,9 @@ public class Client extends JFrame {
     private final String GAME_END_SOUND_PATH = "game_end_sound.wav";
     private final SoundPlayer soundPlayer = new SoundPlayer();
 
+    // Add a custom cursor for the pen
+    private Cursor penCursor;
+
     private void clientGUI(int clientID) {
         // Initialize the board
         board = new int[NUM_CELLS][NUM_CELLS];
@@ -56,7 +61,7 @@ public class Client extends JFrame {
 
         // Initialize the colored pixels in a cell
         coloredPixels = new boolean[NUM_CELLS][NUM_CELLS][BOARD_SIZE][BOARD_SIZE];
-
+        
         // Initialize the GUI
         setTitle("Deny and Conquer - Client #" + clientID);
         setSize(BOARD_SIZE, BOARD_SIZE);
@@ -65,6 +70,20 @@ public class Client extends JFrame {
         add(boardPanel);
         setLocationRelativeTo(null); // board appears in middle of screen
         setResizable(false);
+
+        // Load the custom cursor image
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
+        Image penImage = toolkit.getImage("pencil_client1.png");
+
+        // Set the hotspot of the cursor to its center
+        int cursorWidth = penImage.getWidth(this);
+        int cursorHeight = penImage.getHeight(this);
+        int cursorHotspotX = cursorWidth / 2;
+        int cursorHotspotY = cursorHeight / 2;
+        penCursor = toolkit.createCustomCursor(penImage, new Point(cursorHotspotX, cursorHotspotY), "penCursor");
+
+        // Set the custom cursor for the board panel
+        boardPanel.setCursor(penCursor);    
 
         updateBoard();
 
