@@ -1,4 +1,4 @@
-package main.client.model;
+package main.client.controller;
 
 import java.io.*;
 import java.net.*;
@@ -268,7 +268,7 @@ public class Client1 extends JFrame {
     }
 
     public static void main(String[] args) throws IOException {
-        Client client = new Client();
+        Client1 client = new Client1();
         client.connectServer();
         client.clientGUI(client.clientID);
 

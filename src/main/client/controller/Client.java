@@ -1,4 +1,4 @@
-package main.client.model;
+package main.client.controller;
 
 import java.io.*;
 import java.net.*;

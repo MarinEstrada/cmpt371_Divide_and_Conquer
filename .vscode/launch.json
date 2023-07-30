@@ -4,29 +4,43 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        {
-            "type": "java",
-            "name": "Current File",
-            "request": "launch",
-            "mainClass": "${file}"
-        },
-        {
-            "type": "java",
-            "name": "Launch Server",
-            "request": "launch",
-            "mainClass": "main.server.Server",
-            "projectName": "cmpt371_divide_and_conquer",
-            "cwd": "${workspaceFolder}/src/main/server",
-            "args": ""
-          },
-          {
-            "type": "java",
-            "name": "Launch Client",
-            "request": "launch",
-            "mainClass": "main.client.Client",
-            "projectName": "cmpt371_divide_and_conquer",
-            "cwd": "${workspaceFolder}/src/main/client",
-            "args": ""
-          }
+      {
+        "type": "java",
+        "name": "Client1",
+        "request": "launch",
+        "mainClass": "main.client.model.Client1",
+        "projectName": "cmpt371_Divide_and_Conquer_2ebd9919"
+      },
+      {
+        "type": "java",
+        "name": "Server1",
+        "request": "launch",
+        "mainClass": "main.server.model.Server1",
+        "projectName": "cmpt371_Divide_and_Conquer_2ebd9919"
+      },
+      {
+        "type": "java",
+        "name": "Current File",
+        "request": "launch",
+        "mainClass": "${file}"
+      },
+      {
+        "type": "java",
+        "name": "Launch Server",
+        "request": "launch",
+        "mainClass": "main.server.Server",
+        "projectName": "cmpt371_divide_and_conquer",
+        "cwd": "${workspaceFolder}/src/main/server",
+        "args": ""
+      },
+      {
+        "type": "java",
+        "name": "Launch Client",
+        "request": "launch",
+        "mainClass": "main.client.Client",
+        "projectName": "cmpt371_divide_and_conquer",
+        "cwd": "${workspaceFolder}/src/main/client",
+        "args": ""
+      }
     ]
 }

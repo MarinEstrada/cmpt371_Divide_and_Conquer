@@ -1,4 +1,4 @@
-package main.server.model;
+package main.server.controller;
 
 import java.io.*;
 import java.net.*;

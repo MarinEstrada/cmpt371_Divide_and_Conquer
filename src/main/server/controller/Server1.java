@@ -1,7 +1,9 @@
-package main.server.model;
+package main.server.controller;
 
 import java.io.*;
 import java.net.*;
+
+import main.server.model.Game;
 
 public class Server1 {
     private ServerSocket server;

@@ -1,4 +1,4 @@
-package main.server.model;
+package main.client.model;
 
 public class Player {
     private final int clientID;
