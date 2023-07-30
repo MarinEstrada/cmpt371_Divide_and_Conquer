@@ -30,6 +30,7 @@ public class Server1 {
         }
     }
 
+    //
     public void connectClients() {
         try {
             while (numClients < MAX_CLIENTS) {
@@ -101,7 +102,7 @@ public class Server1 {
             }
         }
 
-        // check if there is a winner
+        // count up all of client 1's cells and client 2's cells
         int client1Count = 0;
         int client2Count = 0;
         for (int row = 0; row < NUM_CELLS; row++) {
@@ -114,6 +115,7 @@ public class Server1 {
             }
         }
 
+        // If client1 has more cells than client2, client1 wins
         if (client1Count > client2Count) {
             return 1;
         } else if (client1Count < client2Count) {
