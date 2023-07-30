@@ -1,29 +1,23 @@
-package main.server.model;
 import java.io.*;
 import java.net.*;
 
-public class Server1 {
+public class Server {
     private ServerSocket server;
-    private int numClients;
-    private int maxClients;
 
     private Socket client1;
     private Socket client2;
-    private DataInputStream in1;
-    private DataInputStream in2;
     private DataOutputStream out1;
     private DataOutputStream out2;
 
-    // What the server keeps track of
-    private Game game;
+    private int[][] board;
+    private int numClients;
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
+    private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
-    // Instantiates the server
     public void newServer() {
         numClients = 0;
-        maxClients = 2;
-        game = new Game();
+        board = new int[NUM_CELLS][NUM_CELLS];
 
         try {
             server = new ServerSocket(7070);
@@ -34,12 +28,10 @@ public class Server1 {
         }
     }
 
-    // Loops until at most, 2 clients are connected and attaches them to the server for inputs
     public void connectClients() {
         try {
-            while (numClients < maxClients) {
-                Socket client = server.accept(); // Blocks the while loop until a client ACTUALLY joins
-
+            while (numClients < MAX_CLIENTS) {
+                Socket client = server.accept();
                 numClients++;
 
                 DataInputStream in = new DataInputStream(client.getInputStream());
@@ -49,42 +41,39 @@ public class Server1 {
 
                 if (numClients == 1) {
                     client1 = client;
-                    in1 = in;
                     out1 = out;
                 } else {
                     client2 = client;
-                    in2 = in;
                     out2 = out;
                 }
 
-                new Thread(new SyncClients(numClients, in)).start(); // Attaches the client to its own thread for processing
+                new Thread(new SyncClients(numClients, in)).start();
             }
-
-            /*
-            Once the numClients have been connected, this loop stops looking for clients and will not be run again
-            That is, if a client loses connection, it cannot reconnect because the server has stopped connecting
-            clients and the game is effectively over.
-            */
         } catch (IOException e) {
             System.out.println("Accept failed: 7070");
             System.exit(-1);
         }
     }
 
-    // 
-    private void broadcastUpdate(int row, int col, int clientID) {
+    private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
         if (client1 != null && client2 != null) {
             try {
                 // board
-                game.makeMove(row, col, null); = clientID;
+                board[row][col] = isFilled;
 
                 out1.writeInt(row);
                 out1.writeInt(col);
                 out1.writeInt(clientID);
+                out1.writeInt(x);
+                out1.writeInt(y);
+                out1.writeInt(isFilled);
 
                 out2.writeInt(row);
                 out2.writeInt(col);
                 out2.writeInt(clientID);
+                out2.writeInt(x);
+                out2.writeInt(y);
+                out2.writeInt(isFilled);
 
                 // Check if there is a winner
                 int winner = checkWinner();
@@ -103,7 +92,7 @@ public class Server1 {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0) { // the board is not full, no winner yet
+                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
                     return 0;
                 }
             }
@@ -132,11 +121,9 @@ public class Server1 {
     }
 
     private class SyncClients implements Runnable {
-        private int clientID;
         private DataInputStream in;
 
         public SyncClients(int clientID, DataInputStream in) {
-            this.clientID = clientID;
             this.in = in;
         }
 
@@ -145,8 +132,12 @@ public class Server1 {
                 while (true) {
                     int row = in.readInt();
                     int col = in.readInt();
+                    int clientID = in.readInt();
+                    int x = in.readInt();
+                    int y = in.readInt();
+                    int isFilled = in.readInt();
 
-                    broadcastUpdate(row, col, clientID);
+                    broadcastUpdate(row, col, clientID, x, y, isFilled);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
