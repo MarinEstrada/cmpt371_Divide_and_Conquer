@@ -2,7 +2,7 @@ package main.server.model;
 
 public class GameBoard {
     private int NUM_CELLS;
-    private Cells[][] board;
+    private Cell[][] board;
     
     public GameBoard(int numCells) {
         this.NUM_CELLS = numCells;
@@ -13,7 +13,7 @@ public class GameBoard {
         // Initialize the game board
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                board[row][col] = new Cells(row, col, 0, row * NUM_CELLS + col);
+                board[row][col] = new Cell(row, col, 0, row * NUM_CELLS + col);
             }
         }
     }
@@ -32,7 +32,11 @@ public class GameBoard {
         return playerCount >= NUM_CELLS;
     }
 
-    public Cells getCell(int row, int col) {
+    public int getCellValue() {
+        return 0;
+    }
+
+    public Cell getCell(int row, int col) {
         return board[row][col];
     }
 

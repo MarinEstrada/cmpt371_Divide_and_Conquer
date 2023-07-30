@@ -1,3 +1,5 @@
+package main.client.model;
+
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -7,7 +9,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Client extends JFrame {
+public class Client1 extends JFrame {
     private Socket client;
     private int clientID;
     DataInputStream in;

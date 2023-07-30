@@ -1,3 +1,5 @@
+package main.server.model;
+
 import java.io.*;
 import java.net.*;
 

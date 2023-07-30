@@ -1,6 +1,6 @@
 package main.server.model;
 
-public class Cells {
+public class Cell {
     
     private final int row;
     private final int col;
@@ -11,7 +11,7 @@ public class Cells {
     public int ownerID;
     public int cellID; // Maybe use modulus to get the row and column?
 
-    public Cells(int row, int col, int ownerID, int cellID) {
+    public Cell(int row, int col, int ownerID, int cellID) {
         this.row = row;
         this.col = col;
         this.ownerID = ownerID;

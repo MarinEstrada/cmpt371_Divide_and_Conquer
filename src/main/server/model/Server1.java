@@ -1,7 +1,9 @@
+package main.server.model;
+
 import java.io.*;
 import java.net.*;
 
-public class Server {
+public class Server1 {
     private ServerSocket server;
 
     private Socket client1;
@@ -9,7 +11,7 @@ public class Server {
     private DataOutputStream out1;
     private DataOutputStream out2;
 
-    private int[][] board;
+    private Game game;
     private int numClients;
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
@@ -17,7 +19,7 @@ public class Server {
 
     public void newServer() {
         numClients = 0;
-        board = new int[NUM_CELLS][NUM_CELLS];
+        game = new Game(NUM_CELLS, MAX_CLIENTS);
 
         try {
             server = new ServerSocket(7070);
@@ -59,7 +61,7 @@ public class Server {
         if (client1 != null && client2 != null) {
             try {
                 // board
-                board[row][col] = isFilled;
+                game.getGameBoard().setCell(row, col, isFilled);
 
                 out1.writeInt(row);
                 out1.writeInt(col);
@@ -92,7 +94,8 @@ public class Server {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
+                if (game.getGameBoard().getCell(row, col).getOwnerID() == 0 || game.getGameBoard().getCell(row, col).getOwnerID() == -1) { 
+                    // the board is not full, no winner yet
                     return 0;
                 }
             }
@@ -103,9 +106,9 @@ public class Server {
         int client2Count = 0;
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 1) {
+                if (game.getGameBoard().getCell(row, col).getOwnerID() == 1) {
                     client1Count++;
-                } else if (board[row][col] == 2) {
+                } else if (game.getGameBoard().getCell(row, col).getOwnerID() == 2) {
                     client2Count++;
                 }
             }

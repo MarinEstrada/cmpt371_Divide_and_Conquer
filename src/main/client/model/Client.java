@@ -1,3 +1,5 @@
+package main.client.model;
+
 import java.io.*;
 import java.net.*;
 import javax.swing.*;

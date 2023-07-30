@@ -15,10 +15,25 @@ public class Game {
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
 
+    // Given no parameters, initialize the game with default max players = 2 and default grid size = 4
     public Game() {
         this.gameBoard = new GameBoard(NUM_CELLS); // Assume this is your game board class
         this.winner = 0;
         this.players = new Player[MAX_PLAYERS];
+    }
+
+    // Given a grid size, initialize the game with default max players = 2
+    public Game(int num_cells) {
+        this.gameBoard = new GameBoard(num_cells); // Assume this is your game board class
+        this.winner = 0;
+        this.players = new Player[MAX_PLAYERS];
+    }
+
+    // Given a max number of players an grid size, initialize the game
+    public Game(int num_cells, int max_players) {
+        this.gameBoard = new GameBoard(num_cells); // Assume this is your game board class
+        this.winner = 0;
+        this.players = new Player[max_players];
     }
 
     public Player getPlayer(int playerID) {
