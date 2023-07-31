@@ -145,9 +145,29 @@ public class Server {
         }
     }
 
+    private void closeServer() {
+        try {
+            if (server != null) {
+                out1.close();
+                out2.close();
+                client1.close();
+                client2.close();
+                server.close();
+                System.out.println("Server closed.");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Server server = new Server();
         server.newServer();
         server.connectClients();
+
+        // close the server
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            server.closeServer();
+        }));
     }
 }
