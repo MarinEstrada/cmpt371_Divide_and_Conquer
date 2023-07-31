@@ -248,6 +248,8 @@ public class Client extends JFrame {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
                         }
 
+                        System.out.println("Current Winner ID: " + winner);
+
                         // announce winner
                         if (winner != 0 && !isGameTerminated) {
                             isGameTerminated = true;

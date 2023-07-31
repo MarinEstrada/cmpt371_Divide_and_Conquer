@@ -10,15 +10,15 @@ public class Player {
     private final int clientID;
     
     // The list of pixels that every player is known to have colored
-    private final List<int[]> pixelInfoList = new ArrayList<>();
+    private final List<int[]> pixelInfoList;
 
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
-    public Player(int clientID) {
+    public Player(int clientID, int num_cells, int BOARD_SIZE) {
         this.clientID = clientID;
+        this.pixelInfoList = new ArrayList<>();
     }
-
 
     // Accessor Functions
     public int getId() {

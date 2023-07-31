@@ -1,5 +1,6 @@
 package main.shared;
 
+// This class is for managing the game board cells
 public class Cell {
     
     private final int row;

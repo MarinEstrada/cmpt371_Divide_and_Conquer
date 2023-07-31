@@ -1,5 +1,6 @@
 package main.server.controller;
 
+import main.shared.Settings;
 import java.io.*;
 import java.net.*;
 
@@ -43,8 +44,6 @@ public class Server1 {
             while(true) {
                 Socket client = server.accept();
                 numClients++;
-
-                
 
                 // Setup and in and output stream connection to the client
                 DataInputStream in = new DataInputStream(client.getInputStream());

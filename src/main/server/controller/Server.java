@@ -62,7 +62,7 @@ public class Server {
             try {
                 // board
                 board[row][col] = isFilled;
-
+                
                 out1.writeInt(row);
                 out1.writeInt(col);
                 out1.writeInt(clientID);

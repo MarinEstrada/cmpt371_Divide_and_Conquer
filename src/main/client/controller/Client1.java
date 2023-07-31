@@ -1,6 +1,7 @@
 package main.client.controller;
 
 import main.shared.Game;
+import main.shared.Settings;
 
 import java.io.*;
 import java.net.*;
@@ -28,33 +29,26 @@ public class Client1 extends JFrame {
     private boolean isGameTerminated = false;
 
     // constants
-    private static final int NUM_CELLS = 4; // the number of cells in a row/column
-    private static final int BOARD_SIZE = 600; // the width/height of the board
-    private static final double COLOR_THRESHOLD = 0.3; // the threshold: filled if >= COLOR_THRESHOLD% of the cell is colored
-    private static final int BRUSH_SIZE = 10; // the size of the brush
-    private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
-    private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
-
     private void clientGUI(int clientID) {
         // Initialize the game, board, and players
-        game = new Game(NUM_CELLS, 2); 
+        game = new Game(Settings.NUM_CELLS, 2); 
 
         // Initialize the colored area in a cell
-        coloredArea = new int[NUM_CELLS][NUM_CELLS];
-        for (int i = 0; i < NUM_CELLS; i++) {
-            for (int j = 0; j < NUM_CELLS; j++) {
+        coloredArea = new int[Settings.NUM_CELLS][Settings.NUM_CELLS];
+        for (int i = 0; i < Settings.NUM_CELLS; i++) {
+            for (int j = 0; j < Settings.NUM_CELLS; j++) {
                 coloredArea[i][j] = 0;
             }
         }
 
         // Initialize the colored pixels in a cell
-        coloredPixels = new boolean[NUM_CELLS][NUM_CELLS][BOARD_SIZE][BOARD_SIZE];
+        coloredPixels = new boolean[Settings.NUM_CELLS][Settings.NUM_CELLS][Settings.BOARD_SIZE][Settings.BOARD_SIZE];
 
         // Initialize the GUI
         setTitle("Deny and Conquer - Client #" + clientID);
-        setSize(BOARD_SIZE, BOARD_SIZE);
+        setSize(Settings.BOARD_SIZE, Settings.BOARD_SIZE);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        boardPanel = new JPanel(new GridLayout(NUM_CELLS, NUM_CELLS, 2, 2));
+        boardPanel = new JPanel(new GridLayout(Settings.NUM_CELLS, Settings.NUM_CELLS, 2, 2));
         add(boardPanel);
         setLocationRelativeTo(null); // board appears in middle of screen
         setResizable(false);
@@ -65,8 +59,8 @@ public class Client1 extends JFrame {
     }
 
     private void updateBoard() {
-        for (int i = 0; i < NUM_CELLS; i++) {
-            for (int j = 0; j < NUM_CELLS; j++) {
+        for (int i = 0; i < Settings.NUM_CELLS; i++) {
+            for (int j = 0; j < Settings.NUM_CELLS; j++) {
                 // Create a JPanel for each cell
                 JPanel cell = new JPanel();
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
@@ -109,7 +103,7 @@ public class Client1 extends JFrame {
         // Check if the cell is filled >= threshold
         if (currOwnerID == 0 || currOwnerID == -1) {
             int isFilled = 0;
-            if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
+            if (coloredArea[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
             } else { // if not filled, clear cell
                 coloredArea[row][col] = 0;
@@ -135,12 +129,12 @@ public class Client1 extends JFrame {
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
 
-            Color brushColor = clientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR;
+            Color brushColor = clientID == 1 ? Settings.CLIENT1_COLOR : Settings.CLIENT2_COLOR;
 
             // Draw on the JPanel (for display purposes)
             Graphics boardImage = cell.getGraphics();
             boardImage.setColor(brushColor);
-            boardImage.fillRect(x, y, BRUSH_SIZE, BRUSH_SIZE);
+            boardImage.fillRect(x, y, Settings.BRUSH_SIZE, Settings.BRUSH_SIZE);
 
             // Create a BufferedImage to store the drawing (for tracking purposes)
             BufferedImage virtualImage = new BufferedImage(cellWidth, cellHeight, BufferedImage.TYPE_INT_RGB);
@@ -165,7 +159,7 @@ public class Client1 extends JFrame {
 
             // // Check if the cell is filled >= threshold
             int isFilled = 0;
-            if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) {
+            if (coloredArea[row][col] >= cellArea * Settings.COLOR_THRESHOLD) {
                 isFilled = clientID;
             }
 
@@ -215,6 +209,10 @@ public class Client1 extends JFrame {
         }
     }
 
+    private void lockCellMessage() {
+        
+    }
+
     private class SyncServer implements Runnable {
         public void run() {
             try {
@@ -233,10 +231,10 @@ public class Client1 extends JFrame {
 
                     SwingUtilities.invokeLater(() -> {
                         // draw on board/cell
-                        JPanel cell = (JPanel) boardPanel.getComponent(currentRow * NUM_CELLS + currentCol);
+                        JPanel cell = (JPanel) boardPanel.getComponent(currentRow * Settings.NUM_CELLS + currentCol);
                         Graphics boardImage = cell.getGraphics();
-                        boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
-                        boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
+                        boardImage.setColor(currentClientID == 1 ? Settings.CLIENT1_COLOR : Settings.CLIENT2_COLOR);
+                        boardImage.fillRect(currentX, currentY, Settings.BRUSH_SIZE, Settings.BRUSH_SIZE);
 
                         
                         // if player released before threshold, clear cell
@@ -252,8 +250,10 @@ public class Client1 extends JFrame {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
                         }
 
+                        System.out.println("Current Winner ID: " + winner);
+
                         // announce winner
-                        if (winner != 0 && !isGameTerminated) {
+                        if (winner >= -1 && winner != 0 && winner <= 2 && !isGameTerminated) {
                             isGameTerminated = true;
                             if (winner == clientID) {
                                 printGameResult("You win!");
@@ -279,7 +279,7 @@ public class Client1 extends JFrame {
         new Thread(client.new SyncServer()).start();
 
         // Periodically send pixelInfoList to server
-        Timer timer = new Timer(100, e -> {
+        Timer timer = new Timer(50, e -> {
             client.sendPixelInfoListToServer();
         });
         timer.start();
