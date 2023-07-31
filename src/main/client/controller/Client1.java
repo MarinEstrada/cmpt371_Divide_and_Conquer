@@ -19,6 +19,7 @@ public class Client1 extends JFrame {
     private final List<int[]> pixelInfoList = new ArrayList<>();
 
     private JPanel boardPanel;
+
     private Game game;
     // private int[][] board;
     private int[][] coloredArea;
@@ -218,6 +219,7 @@ public class Client1 extends JFrame {
         public void run() {
             try {
                 while (true) {
+                    // Read the information from the server (Another client sent info and the server is relaying it back to you)
                     int currentRow = in.readInt();
                     int currentCol = in.readInt();
                     int currentClientID = in.readInt();
@@ -226,6 +228,7 @@ public class Client1 extends JFrame {
                     int currentIsFilled = in.readInt();
                     int winner = in.readInt();
                     
+                    // Update the game board
                     game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
 
                     SwingUtilities.invokeLater(() -> {
