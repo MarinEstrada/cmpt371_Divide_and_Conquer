@@ -1,4 +1,4 @@
-package main.client.model;
+package main.shared;
 
 public class Cell {
     

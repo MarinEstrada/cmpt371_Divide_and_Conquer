@@ -1,4 +1,4 @@
-package main.server.model;
+package main.shared;
 
 import java.io.IOException;
 

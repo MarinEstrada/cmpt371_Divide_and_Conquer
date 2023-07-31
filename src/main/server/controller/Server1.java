@@ -3,7 +3,7 @@ package main.server.controller;
 import java.io.*;
 import java.net.*;
 
-import main.server.model.Game;
+import main.shared.Game;
 
 public class Server1 {
     private ServerSocket server;
@@ -66,6 +66,7 @@ public class Server1 {
                 // board
                 game.getGameBoard().setCell(row, col, isFilled);
 
+                // Sending the information received from a single client to all clients
                 out1.writeInt(row);
                 out1.writeInt(col);
                 out1.writeInt(clientID);
@@ -137,13 +138,15 @@ public class Server1 {
         public void run() {
             try {
                 while (true) {
+                    // Read the information from the client
                     int row = in.readInt();
                     int col = in.readInt();
                     int clientID = in.readInt();
                     int x = in.readInt();
                     int y = in.readInt();
                     int isFilled = in.readInt();
-
+                    
+                    // Broadcast the information to all clients
                     broadcastUpdate(row, col, clientID, x, y, isFilled);
                 }
             } catch (IOException ex) {

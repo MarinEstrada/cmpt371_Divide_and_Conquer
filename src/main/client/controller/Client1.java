@@ -1,5 +1,7 @@
 package main.client.controller;
 
+import main.shared.Game;
+
 import java.io.*;
 import java.net.*;
 import javax.swing.*;
@@ -17,7 +19,8 @@ public class Client1 extends JFrame {
     private final List<int[]> pixelInfoList = new ArrayList<>();
 
     private JPanel boardPanel;
-    private int[][] board;
+    private Game game;
+    // private int[][] board;
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
@@ -32,13 +35,8 @@ public class Client1 extends JFrame {
     private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
 
     private void clientGUI(int clientID) {
-        // Initialize the board
-        board = new int[NUM_CELLS][NUM_CELLS];
-        for (int i = 0; i < NUM_CELLS; i++) {
-            for (int j = 0; j < NUM_CELLS; j++) {
-                board[i][j] = 0;
-            }
-        }
+        // Initialize the game, board, and players
+        game = new Game(NUM_CELLS, 2); 
 
         // Initialize the colored area in a cell
         coloredArea = new int[NUM_CELLS][NUM_CELLS];
@@ -105,9 +103,10 @@ public class Client1 extends JFrame {
         int cellWidth = cell.getWidth();
         int cellHeight = cell.getHeight();
         int cellArea = cellWidth * cellHeight;
+        int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
 
         // Check if the cell is filled >= threshold
-        if (board[row][col] == 0 || board[row][col] == -1) {
+        if (currOwnerID == 0 || currOwnerID == -1) {
             int isFilled = 0;
             if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
@@ -128,7 +127,9 @@ public class Client1 extends JFrame {
     }
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
-        if (board[row][col] == 0 || board[row][col] == -1) {
+        int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
+
+        if (currOwnerID == 0 || currOwnerID == -1) {
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
@@ -224,8 +225,8 @@ public class Client1 extends JFrame {
                     int currentY = in.readInt();
                     int currentIsFilled = in.readInt();
                     int winner = in.readInt();
-
-                    board[currentRow][currentCol] = currentIsFilled;
+                    
+                    game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
 
                     SwingUtilities.invokeLater(() -> {
                         // draw on board/cell

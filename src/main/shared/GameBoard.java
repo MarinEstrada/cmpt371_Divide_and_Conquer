@@ -1,4 +1,4 @@
-package main.client.model;
+package main.shared;
 
 public class GameBoard {
     private int NUM_CELLS;
@@ -10,6 +10,7 @@ public class GameBoard {
     }
 
     public void init() {
+        board = new Cell[NUM_CELLS][NUM_CELLS];
         // Initialize the game board
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
