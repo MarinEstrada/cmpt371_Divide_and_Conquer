@@ -2,6 +2,8 @@ package main.shared;
 
 import java.io.IOException;
 
+
+// This class is responsible for managing the game state
 public class Game {
     public static final int MAX_PLAYERS = 2;
     private final Player[] players;
@@ -15,6 +17,7 @@ public class Game {
 
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
 
+    // Constructors
     // Given no parameters, initialize the game with default max players = 2 and default grid size = 4
     public Game() {
         this.gameBoard = new GameBoard(NUM_CELLS); // Assume this is your game board class
@@ -36,6 +39,7 @@ public class Game {
         this.players = new Player[max_players];
     }
     
+    // Accessor Functions
     public Player getPlayer(int playerID) {
         if (playerID < MAX_PLAYERS && playerID >= 0) {
             return players[playerID];
@@ -52,16 +56,18 @@ public class Game {
         return this.winner;
     }
 
+    public int getNumPlayers() {
+        return players.length;
+    }
+
+    // Setting Functions
     public void setWinner(int winner) {
         this.winner = winner;
     }
 
+    // Game logic
     public boolean isValidMove(int row, int col) {
         return gameBoard.getCell(row, col).isOwned();
-    }
-
-    public int getNumPlayers() {
-        return players.length;
     }
 
     // Update the game state based on a player's move

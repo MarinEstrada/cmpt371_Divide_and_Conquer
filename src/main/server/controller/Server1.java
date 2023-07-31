@@ -5,6 +5,7 @@ import java.net.*;
 
 import main.shared.Game;
 
+// This class is for controlling the sockets and connections between the server and clients
 public class Server1 {
     private ServerSocket server;
 
@@ -25,12 +26,38 @@ public class Server1 {
     public void newServer() {
         numClients = 0;
         game = new Game(NUM_CELLS, MAX_CLIENTS);
+        clients = new Socket[MAX_CLIENTS];
 
         try {
             server = new ServerSocket(7070);
             System.out.println("Listening on port 7070...");
         } catch (IOException e) {
             System.out.println("Could not listen on port 7070");
+            System.exit(-1);
+        }
+    }
+
+    public void connectClientsNew() {
+        // Connects the clients to the server and starts a new thread for each client, supports reconnection
+        try {
+            while(true) {
+                Socket client = server.accept();
+                numClients++;
+
+                
+
+                // Setup and in and output stream connection to the client
+                DataInputStream in = new DataInputStream(client.getInputStream());
+                DataOutputStream out = new DataOutputStream(client.getOutputStream());
+                
+                // Tell the client what their ID is
+                out.writeInt(numClients);
+                System.out.println("Client #" + numClients + " has connected to the server!");
+
+                new Thread(new SyncClients(numClients, in)).start();
+            }
+        } catch (IOException e) {
+            System.out.println("Accept failed: 7070");
             System.exit(-1);
         }
     }

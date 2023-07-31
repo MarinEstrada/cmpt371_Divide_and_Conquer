@@ -1,17 +1,15 @@
 package main.shared;
 
+// This class is responsible for managing the game board/all the cells collectively
 public class GameBoard {
     private int NUM_CELLS;
     private Cell[][] board;
     
     public GameBoard(int numCells) {
         this.NUM_CELLS = numCells;
-        init();
-    }
 
-    public void init() {
-        board = new Cell[NUM_CELLS][NUM_CELLS];
         // Initialize the game board
+        board = new Cell[NUM_CELLS][NUM_CELLS];
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
                 board[row][col] = new Cell(row, col, 0);
@@ -33,6 +31,7 @@ public class GameBoard {
         return playerCount >= NUM_CELLS;
     }
 
+    // Accessor Functions
     public int getCellValue() {
         return 0;
     }
@@ -41,6 +40,7 @@ public class GameBoard {
         return board[row][col];
     }
 
+    // Setting Functions
     // if the cell is owned, return the currently owned player's ownerID, else return the ownerID passed in
     public int setCell(int row, int col, int ownerID) {
         if (board[row][col].isOwned()) {
