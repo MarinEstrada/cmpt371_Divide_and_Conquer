@@ -12,8 +12,8 @@ import java.util.List;
 public class Client extends JFrame {
     private Socket client;
     private int clientID;
-    DataInputStream in;
-    DataOutputStream out;
+    private DataInputStream in;
+    private DataOutputStream out;
     private final List<int[]> pixelInfoList = new ArrayList<>();
 
     private JPanel boardPanel;
@@ -267,6 +267,19 @@ public class Client extends JFrame {
         }
     }
 
+    private void closeSocket() {
+        try {
+            if (client != null) {
+                System.out.println("Closing client socket...");
+                client.close();
+                in.close();
+                out.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Client client = new Client();
         client.connectServer();
@@ -279,5 +292,10 @@ public class Client extends JFrame {
             client.sendPixelInfoListToServer();
         });
         timer.start();
+
+        // close connection
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            client.closeSocket();
+        }));
     }
 }
