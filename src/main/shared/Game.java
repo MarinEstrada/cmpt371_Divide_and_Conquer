@@ -35,7 +35,7 @@ public class Game {
         this.winner = 0;
         this.players = new Player[max_players];
     }
-
+    
     public Player getPlayer(int playerID) {
         if (playerID < MAX_PLAYERS && playerID >= 0) {
             return players[playerID];
@@ -58,6 +58,10 @@ public class Game {
 
     public boolean isValidMove(int row, int col) {
         return gameBoard.getCell(row, col).isOwned();
+    }
+
+    public int getNumPlayers() {
+        return players.length;
     }
 
     // Update the game state based on a player's move

@@ -8,11 +8,14 @@ import main.shared.Game;
 public class Server1 {
     private ServerSocket server;
 
+    private Socket[] clients;
     private Socket client1;
     private Socket client2;
+
+    private DataOutputStream[] outputStreams;
     private DataOutputStream out1;
     private DataOutputStream out2;
-
+    
     private Game game;
     private int numClients;
 
@@ -32,15 +35,18 @@ public class Server1 {
         }
     }
 
-    //
     public void connectClients() {
         try {
             while (numClients < MAX_CLIENTS) {
+                // Blocking wait for a client to connect
                 Socket client = server.accept();
                 numClients++;
-
+                
+                // Setup and in and output stream connection to the client
                 DataInputStream in = new DataInputStream(client.getInputStream());
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
+                
+                // Tell the client what their ID is
                 out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
@@ -52,6 +58,7 @@ public class Server1 {
                     out2 = out;
                 }
 
+                // Start a new thread to handle the client's synced connection with all clients and the server
                 new Thread(new SyncClients(numClients, in)).start();
             }
         } catch (IOException e) {
@@ -98,7 +105,8 @@ public class Server1 {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (game.getGameBoard().getCell(row, col).getOwnerID() == 0 || game.getGameBoard().getCell(row, col).getOwnerID() == -1) { 
+                int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
+                if (currOwnerID == 0 || currOwnerID == -1) { 
                     // the board is not full, no winner yet
                     return 0;
                 }
@@ -110,9 +118,10 @@ public class Server1 {
         int client2Count = 0;
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                if (game.getGameBoard().getCell(row, col).getOwnerID() == 1) {
+                int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
+                if (currOwnerID == 1) {
                     client1Count++;
-                } else if (game.getGameBoard().getCell(row, col).getOwnerID() == 2) {
+                } else if (currOwnerID == 2) {
                     client2Count++;
                 }
             }
