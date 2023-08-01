@@ -16,6 +16,7 @@ public class Client extends JFrame {
 
     private JPanel boardPanel;
     private int[][] board;
+    private int[][] boardCurrentStatus;
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
@@ -35,6 +36,14 @@ public class Client extends JFrame {
         for (int i = 0; i < NUM_CELLS; i++) {
             for (int j = 0; j < NUM_CELLS; j++) {
                 board[i][j] = 0;
+            }
+        }
+
+        // Initialize the current status of the board
+        boardCurrentStatus = new int[NUM_CELLS][NUM_CELLS];
+        for (int i = 0; i < NUM_CELLS; i++) {
+            for (int j = 0; j < NUM_CELLS; j++) {
+                boardCurrentStatus[i][j] = 0;
             }
         }
 
@@ -105,7 +114,7 @@ public class Client extends JFrame {
         int cellArea = cellWidth * cellHeight;
 
         // Check if the cell is filled >= threshold
-        if (board[row][col] == 0 || board[row][col] == -1) {
+        if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             int isFilled = 0;
             if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
@@ -126,7 +135,8 @@ public class Client extends JFrame {
     }
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
-        if (board[row][col] == 0 || board[row][col] == -1) {
+        if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
+            System.out.println("boardCurrentStatus[" + row + "][" + col + "] = " + boardCurrentStatus[row][col]);
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
@@ -224,6 +234,7 @@ public class Client extends JFrame {
                     int winner = in.readInt();
 
                     board[currentRow][currentCol] = currentIsFilled;
+                    boardCurrentStatus[currentRow][currentCol] = currentClientID;
 
                     SwingUtilities.invokeLater(() -> {
                         // draw on board/cell
@@ -232,7 +243,7 @@ public class Client extends JFrame {
                         boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
                         boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
 
-                        
+
                         // if player released before threshold, clear cell
                         if (currentIsFilled == -1) {
                             System.out.println("SYNC Removing drawnlines");
@@ -240,14 +251,14 @@ public class Client extends JFrame {
                             cell.revalidate();
                             cell.repaint();
                         }
-                        
+
                         // fill cell if passed threshold
                         if (currentIsFilled != 0 && currentIsFilled != -1) {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
                         }
 
                         // announce winner
-                        if (winner != 0 && !isGameTerminated) {
+                        if ((winner == -1 || winner == 1 || winner == 2) && !isGameTerminated) {
                             isGameTerminated = true;
                             if (winner == clientID) {
                                 printGameResult("You win!");
