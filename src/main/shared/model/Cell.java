@@ -1,4 +1,4 @@
-package main.shared;
+package main.shared.model;
 
 // This class is for managing the game board cells
 public class Cell {

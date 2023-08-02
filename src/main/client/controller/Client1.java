@@ -1,7 +1,8 @@
 package main.client.controller;
 
-import main.shared.Game;
-import main.shared.Settings;
+import main.shared.messaging.GamePacket;
+import main.shared.messaging.UpdatePacket;
+import main.shared.model.*;
 
 import java.io.*;
 import java.net.*;
@@ -15,9 +16,10 @@ import java.util.List;
 public class Client1 extends JFrame {
     private Socket client;
     private int clientID;
-    DataInputStream in;
-    DataOutputStream out;
-    private final List<int[]> pixelInfoList = new ArrayList<>();
+    private Player clientPlayer;
+
+    ObjectInputStream in;
+    ObjectOutputStream out;
 
     private JPanel boardPanel;
 
@@ -117,7 +119,7 @@ public class Client1 extends JFrame {
                     }
                 }
             }
-            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
+            game.getPlayer(clientID).pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
@@ -164,7 +166,7 @@ public class Client1 extends JFrame {
             }
 
             // Add pixel information to the list, to be sent to the server
-            pixelInfoList.add(new int[]{row, col, clientID, x, y, isFilled});
+            game.getPlayer(clientID).getPixelInfoList().add(new int[]{row, col, clientID, x, y, isFilled});
         }
     }
 
@@ -177,8 +179,8 @@ public class Client1 extends JFrame {
         try {
             client = new Socket("localhost", 7070);
 
-            in = new DataInputStream(client.getInputStream());
-            out = new DataOutputStream(client.getOutputStream());
+            in = new ObjectInputStream(client.getInputStream());
+            out = new ObjectOutputStream(client.getOutputStream());
 
             clientID = in.readInt();
             System.out.println("You are client #" + clientID + ", you are connected to the server!");
@@ -194,23 +196,22 @@ public class Client1 extends JFrame {
     private void sendPixelInfoListToServer() {
         try {
             // Send each pixel information to the server
-            for (int[] pixelInfo : pixelInfoList) {
-                out.writeInt(pixelInfo[0]); // row
-                out.writeInt(pixelInfo[1]); // col
-                out.writeInt(pixelInfo[2]); // clientID
-                out.writeInt(pixelInfo[3]); // x
-                out.writeInt(pixelInfo[4]); // y
-                out.writeInt(pixelInfo[5]); // isFilled
+            for (int[] pixelInfo : game.getPlayer(clientID).getPixelInfoList()) {
+                UpdatePacket packet = new UpdatePacket(0, pixelInfo);
+                packet.getData()[0] = pixelInfo[0];
+                packet.getData()[1] = pixelInfo[1];
+                packet.getData()[2] = pixelInfo[2];
+                packet.getData()[3] = pixelInfo[3];
+                packet.getData()[4] = pixelInfo[4];
+                packet.getData()[5] = pixelInfo[5];
+
+                out.writeObject(packet);
             }
             out.flush(); // Flush the output stream to ensure all data is sent
-            pixelInfoList.clear(); // Clear the pixelInfoList
+            game.getPlayer(clientID).getPixelInfoList().clear(); // Clear the pixelInfoList
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-    }
-
-    private void lockCellMessage() {
-        
     }
 
     private class SyncServer implements Runnable {

@@ -1,4 +1,4 @@
-package main.shared;
+package main.shared.model;
 
 import java.util.ArrayList;
 import java.util.List;

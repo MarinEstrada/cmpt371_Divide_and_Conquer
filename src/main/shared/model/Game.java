@@ -1,11 +1,13 @@
-package main.shared;
+package main.shared.model;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 
 // This class is responsible for managing the game state
 public class Game {
-    public static final int MAX_PLAYERS = 2;
+    private final int MAX_PLAYERS;
+
     private final Player[] players;
     private GameBoard gameBoard;
 
@@ -15,25 +17,10 @@ public class Game {
     // n = player n
     private int winner;
 
-    private static final int NUM_CELLS = 4; // the number of cells in a row/column
-
-    // Constructors
-    // Given no parameters, initialize the game with default max players = 2 and default grid size = 4
-    public Game() {
-        this.gameBoard = new GameBoard(NUM_CELLS); // Assume this is your game board class
-        this.winner = 0;
-        this.players = new Player[MAX_PLAYERS];
-    }
-
-    // Given a grid size, initialize the game with default max players = 2
-    public Game(int num_cells) {
-        this.gameBoard = new GameBoard(num_cells); // Assume this is your game board class
-        this.winner = 0;
-        this.players = new Player[MAX_PLAYERS];
-    }
-
     // Given a max number of players an grid size, initialize the game
     public Game(int num_cells, int max_players) {
+        this.MAX_PLAYERS = max_players;
+
         this.gameBoard = new GameBoard(num_cells); // Assume this is your game board class
         this.winner = 0;
         this.players = new Player[max_players];

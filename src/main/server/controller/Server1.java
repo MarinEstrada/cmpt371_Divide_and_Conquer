@@ -1,10 +1,11 @@
 package main.server.controller;
 
-import main.shared.Settings;
+import main.shared.messaging.Packet;
+import main.shared.model.Game;
+import main.shared.model.Settings;
+
 import java.io.*;
 import java.net.*;
-
-import main.shared.Game;
 
 // This class is for controlling the sockets and connections between the server and clients
 public class Server1 {
@@ -13,10 +14,6 @@ public class Server1 {
     private Socket[] clients;
     private Socket client1;
     private Socket client2;
-
-    private DataOutputStream[] outputStreams;
-    private DataOutputStream out1;
-    private DataOutputStream out2;
 
     private ObjectOutputStream[] objectOutputStreams;
     private ObjectOutputStream objectOut1;
@@ -27,8 +24,9 @@ public class Server1 {
 
     public void newServer() {
         numClients = 0;
-        game = new Game(Settings.NUM_CELLS, Settings.MAX_CLIENTS);
-        clients = new Socket[Settings.MAX_CLIENTS];
+        game = new Game(Settings.NUM_CELLS, Settings.MAX_PLAYERS);
+        clients = new Socket[Settings.MAX_PLAYERS];
+        objectOutputStreams = new ObjectOutputStream[Settings.MAX_PLAYERS];
 
         try {
             server = new ServerSocket(7070);
@@ -45,10 +43,6 @@ public class Server1 {
             while(true) {
                 Socket client = server.accept();
                 numClients++;
-
-                // Setup and in and output stream connection to the client
-                DataInputStream in = new DataInputStream(client.getInputStream());
-                DataOutputStream out = new DataOutputStream(client.getOutputStream());
                 
                 ObjectInputStream objectIn = new ObjectInputStream(client.getInputStream());
                 ObjectOutputStream objectOut = new ObjectOutputStream(client.getOutputStream());
@@ -57,7 +51,6 @@ public class Server1 {
                 objectOut.writeObject(game);
 
                 // Tell the client what their ID is
-                out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
                 new Thread(new SyncClients(numClients, objectIn)).start();
@@ -70,7 +63,7 @@ public class Server1 {
 
     // public void connectClients() {
     //     try {
-    //         while (numClients < Settings.MAX_CLIENTS) {
+    //         while (numClients < Settings.MAX_PLAYERS) {
     //             // Blocking wait for a client to connect
     //             Socket client = server.accept();
     //             numClients++;
@@ -146,8 +139,8 @@ public class Server1 {
                 out1.writeInt(winner);
                 out2.writeInt(winner);
 
-                out1.flush();
-                out2.flush();
+                objectOut1.flush();
+                objectOut2.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }

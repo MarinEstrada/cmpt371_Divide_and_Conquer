@@ -1,4 +1,4 @@
-package main.shared;
+package main.shared.model;
 
 // This class is responsible for managing the game board/all the cells collectively
 public class GameBoard {

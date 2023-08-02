@@ -1,4 +1,4 @@
-package main.shared;
+package main.shared.model;
 
 import java.awt.*;
 
@@ -14,5 +14,5 @@ public class Settings {
     public static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
 
     // Server Settings
-    private static final int MAX_CLIENTS = 2; // the maximum number of clients
+    public static final int MAX_PLAYERS = 2; // the maximum number of clients
 }
