@@ -6,84 +6,67 @@ import main.shared.model.Settings;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 
 // This class is for controlling the sockets and connections between the server and clients
 public class Server1 {
-    private ServerSocket server;
+    private ServerSocket serverSocket;
 
-    private Socket[] clients;
-    private Socket client1;
-    private Socket client2;
-
-    private ObjectOutputStream[] objectOutputStreams;
-    private ObjectOutputStream objectOut1;
-    private ObjectOutputStream objectOut2;
+    private ArrayList<ObjectOutputStream> outputStreams = new ArrayList<ObjectOutputStream>();
     
     private Game game;
     private int numClients;
 
-    public void newServer() {
+
+    public void initServer() {
         numClients = 0;
         game = new Game(Settings.NUM_CELLS, Settings.MAX_PLAYERS);
-        clients = new Socket[Settings.MAX_PLAYERS];
-        objectOutputStreams = new ObjectOutputStream[Settings.MAX_PLAYERS];
 
         try {
-            server = new ServerSocket(7070);
-            System.out.println("Listening on port 7070...");
-        } catch (IOException e) {
-            System.out.println("Could not listen on port 7070");
-            System.exit(-1);
-        }
-    }
+            ServerSocket serverSocket = new ServerSocket(7070);
+            System.out.println("Server listening on port 7070...");
 
-    public void connectClients() {
-        // Connects the clients to the server and starts a new thread for each client, supports reconnection
-        try {
-            while(true) {
-                Socket client = server.accept();
-                numClients++;
-                
-                ObjectInputStream objectIn = new ObjectInputStream(client.getInputStream());
-                ObjectOutputStream objectOut = new ObjectOutputStream(client.getOutputStream());
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
 
-                // Give the client the current game state and the client's ID
-                objectOut.writeObject(game);
+                // Create streams for communication with the client
+                ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
+                ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-                // Tell the client what their ID is
-                System.out.println("Client #" + numClients + " has connected to the server!");
+                GamePacket initialGameState = new GamePacket(numClients, game);
+                out.writeObject(initialGameState);
 
-                new Thread(new SyncClients(numClients, objectIn)).start();
+                outputStreams.add(out);
+
+                new Thread(new SyncClients(numClients, in)).start();
             }
         } catch (IOException e) {
-            System.out.println("Accept failed: 7070");
-            System.exit(-1);
+            e.printStackTrace();
         }
     }
 
     private void broadcastUpdate(UpdatePacket packet) {
-        if (client1 != null && client2 != null) {
-            try {
-                // Sending the information received from a single client to all clients
-                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
-                    objectOutputStreams[i].writeObject(packet);
-                }
-
-                // Check if there is a winner
-                int winner = checkWinner();
-                int[] winnerInfo = {winner};
-                UpdatePacket winnerPacket = new UpdatePacket(2, 1, winnerInfo);
-                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
-                    objectOutputStreams[i].writeObject(winnerPacket);
-                }
-
-                // Flush the output streams
-                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
-                    objectOutputStreams[i].flush();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        try {
+            // Sending the information received from a single client to all clients
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                outputStreams.get(i).writeObject(packet);
             }
+
+            // Check if there is a winner
+            int winner = checkWinner();
+            int[] winnerInfo = {winner};
+            UpdatePacket winnerPacket = new UpdatePacket(2, 1, winnerInfo);
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                outputStreams.get(i).writeObject(winnerPacket);
+            }
+
+            // Flush the output streams
+            for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                outputStreams.get(i).flush();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -123,6 +106,14 @@ public class Server1 {
         }
     }
 
+    private void closeSocket() {
+        try {
+            serverSocket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private class SyncClients implements Runnable {
         private ObjectInputStream in;
 
@@ -145,13 +136,15 @@ public class Server1 {
             } catch (ClassNotFoundException ex) {
                 System.out.println("Class not found exception");
                 ex.printStackTrace();
+            } finally {
+                
             }
         }
     }
 
     public static void main(String[] args) throws IOException {
-        Server server = new Server();
-        server.newServer();
-        server.connectClients();
+        Server1 server = new Server1();
+        server.initServer();
+        server.closeSocket();
     }
 }

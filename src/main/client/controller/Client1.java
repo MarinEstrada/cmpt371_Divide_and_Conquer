@@ -16,9 +16,6 @@ public class Client1 extends JFrame {
     private int clientID;
     private Player clientPlayer;
 
-    ObjectInputStream in;
-    ObjectOutputStream out;
-
     private JPanel boardPanel;
 
     private Game game;
@@ -27,9 +24,9 @@ public class Client1 extends JFrame {
     public Client1() {
         // Initialize the game, board, and players
         game = new Game(Settings.NUM_CELLS, 2); 
+    }
 
-        connectServer();
-        
+    public void clientGUI() {
         // Initialize the colored area in the cell if it isn't already initialized (a reconnect)
         if (clientPlayer.getColoredArea() == null) {
             clientPlayer.setColoredArea(new int[Settings.NUM_CELLS][Settings.NUM_CELLS]);
@@ -64,15 +61,21 @@ public class Client1 extends JFrame {
             client = new Socket("localhost", 7070);
 
             System.out.println("Got to line 69");
-            in = new ObjectInputStream(client.getInputStream());
-            out = new ObjectOutputStream(client.getOutputStream());
+
+            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             
             // Retrieve the current state of the game from the server
             GamePacket packet = (GamePacket)in.readObject();
+
             System.out.println("Got to line 75");
             game = packet.getGame();
             clientID = packet.getClientID();
             clientPlayer = game.getPlayer(clientID);
+
+            if (clientPlayer == null) {
+                clientPlayer = new Player(clientID, Settings.NUM_CELLS, Settings.BOARD_SIZE);
+            }
 
             System.out.println("You are client #" + clientID + ", you are connected to the server!");
             if (clientID == 1) {
@@ -206,9 +209,9 @@ public class Client1 extends JFrame {
     private void sendPixelInfoListToServer() {
         try {
             // Send each pixel information to the server
+            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
             for (int[] pixelInfo : clientPlayer.getPixelInfoList()) {
                 UpdatePacket packet = new UpdatePacket(0, 6,pixelInfo);
-
                 out.writeObject(packet);
             }
             out.flush(); // Flush the output stream to ensure all data is sent
@@ -223,7 +226,8 @@ public class Client1 extends JFrame {
             try {
                 while (true) {
                     // Read the information from the server (Another client sent info and the server is relaying it back to you)
-                    UpdatePacket update = (UpdatePacket) Client1.this.in.readObject();
+                    ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+                    UpdatePacket update = (UpdatePacket) in.readObject();
                     if (update.getType() == 0) {
 
                     } else if (update.getType() == 1) {
@@ -240,7 +244,8 @@ public class Client1 extends JFrame {
                     int currentIsFilled = update.getData(5);
 
                     // This isn't used yet, but it's here for future use
-                    int winner = update.getData(6);
+                    update = (UpdatePacket) in.readObject();
+                    int winner = update.getData(0);
                     
                     // Update the game board
                     game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
@@ -293,7 +298,8 @@ public class Client1 extends JFrame {
 
     public static void main(String[] args) throws IOException {
         Client1 client = new Client1();
-
+        client.connectServer();
+        client.clientGUI();
         new Thread(client.new SyncServer()).start();
 
         // Periodically send pixelInfoList to server
