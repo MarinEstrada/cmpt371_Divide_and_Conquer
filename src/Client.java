@@ -297,7 +297,7 @@ public class Client extends JFrame {
         new Thread(client.new SyncServer()).start();
 
         // Periodically send pixelInfoList to server
-        Timer timer = new Timer(100, e -> {
+        Timer timer = new Timer(10, e -> {
             client.sendPixelInfoListToServer();
         });
         timer.start();
