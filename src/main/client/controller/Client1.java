@@ -23,9 +23,6 @@ public class Client1 extends JFrame {
 
     private Game game;
 
-    // private int[][] coloredArea;
-    // private boolean[][][][] coloredPixels;
-
     private boolean isGameTerminated = false;
     public Client1() {
         // Initialize the game, board, and players
