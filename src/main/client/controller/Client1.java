@@ -10,8 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Client1 extends JFrame {
     private Socket client;
@@ -24,27 +22,31 @@ public class Client1 extends JFrame {
     private JPanel boardPanel;
 
     private Game game;
-    // private int[][] board;
-    private int[][] coloredArea;
-    private boolean[][][][] coloredPixels;
+
+    // private int[][] coloredArea;
+    // private boolean[][][][] coloredPixels;
 
     private boolean isGameTerminated = false;
-
-    // constants
-    private void clientGUI(int clientID) {
+    public Client1() {
         // Initialize the game, board, and players
         game = new Game(Settings.NUM_CELLS, 2); 
 
-        // Initialize the colored area in a cell
-        coloredArea = new int[Settings.NUM_CELLS][Settings.NUM_CELLS];
-        for (int i = 0; i < Settings.NUM_CELLS; i++) {
-            for (int j = 0; j < Settings.NUM_CELLS; j++) {
-                coloredArea[i][j] = 0;
+        connectServer();
+        
+        // Initialize the colored area in the cell if it isn't already initialized (a reconnect)
+        if (clientPlayer.getColoredArea() == null) {
+            clientPlayer.setColoredArea(new int[Settings.NUM_CELLS][Settings.NUM_CELLS]);
+            for (int i = 0; i < Settings.NUM_CELLS; i++) {
+                for (int j = 0; j < Settings.NUM_CELLS; j++) {
+                    clientPlayer.getColoredArea()[i][j] = 0;
+                }
             }
         }
 
-        // Initialize the colored pixels in a cell
-        coloredPixels = new boolean[Settings.NUM_CELLS][Settings.NUM_CELLS][Settings.BOARD_SIZE][Settings.BOARD_SIZE];
+        // Initialize the colored pixels in a cell if it isn't already initialized (a reconnect)
+        if (clientPlayer.getColoredPixels() == null) {
+            clientPlayer.setColoredPixels(new boolean[Settings.NUM_CELLS][Settings.NUM_CELLS][Settings.BOARD_SIZE][Settings.BOARD_SIZE]);
+        }
 
         // Initialize the GUI
         setTitle("Deny and Conquer - Client #" + clientID);
@@ -58,6 +60,32 @@ public class Client1 extends JFrame {
         updateBoard();
 
         setVisible(true);
+    }
+
+    public void connectServer() {
+        try {
+            client = new Socket("localhost", 7070);
+
+            in = new ObjectInputStream(client.getInputStream());
+            out = new ObjectOutputStream(client.getOutputStream());
+            
+            // Retrieve the current state of the game from the server
+            GamePacket packet = (GamePacket)in.readObject();
+            game = packet.getGame();
+            clientID = packet.getClientID();
+            clientPlayer = game.getPlayer(clientID);
+
+            System.out.println("You are client #" + clientID + ", you are connected to the server!");
+            if (clientID == 1) {
+                System.out.println("Waiting for another client to connect...");
+            }
+        } catch (IOException e) {
+            System.out.println("Could not connect to server");
+            System.exit(-1);
+        } catch (ClassNotFoundException e) {
+            System.out.println("Could not find class: GamePacket");
+            System.exit(-1);
+        }
     }
 
     private void updateBoard() {
@@ -105,21 +133,21 @@ public class Client1 extends JFrame {
         // Check if the cell is filled >= threshold
         if (currOwnerID == 0 || currOwnerID == -1) {
             int isFilled = 0;
-            if (coloredArea[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
+            if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
             } else { // if not filled, clear cell
-                coloredArea[row][col] = 0;
+                clientPlayer.getColoredArea()[row][col] = 0;
                 cell.removeAll();
                 cell.revalidate();
                 cell.repaint();
                 isFilled = -1;
                 for (int i = 0; i < cellWidth; i++) { // flush coloredPixels
                     for (int j = 0; j < cellHeight; j++) {
-                        coloredPixels[row][col][i][j] = false;
+                        clientPlayer.getColoredPixels()[row][col][i][j] = false;
                     }
                 }
             }
-            game.getPlayer(clientID).pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
+            game.getPlayer(clientID).getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
@@ -148,25 +176,25 @@ public class Client1 extends JFrame {
             // Check if the pixel is already colored, if not, color it
             for (int i = 0; i < cellWidth; i++) {
                 for (int j = 0; j < cellHeight; j++) {
-                    if (!coloredPixels[row][col][i][j]) {
+                    if (!clientPlayer.getColoredPixels()[row][col][i][j]) {
                         if (virtualImage.getRGB(i, j) == brushColor.getRGB()) {
-                            coloredPixels[row][col][i][j] = true;
-                            coloredArea[row][col]++;
+                            clientPlayer.getColoredPixels()[row][col][i][j] = true;
+                            clientPlayer.getColoredArea()[row][col]++;
                         }
                     }
                 }
             }
 
-            System.out.println("coloredArea: " + coloredArea[row][col] + ", cellArea: " + cellArea);
+            System.out.println("coloredArea: " + clientPlayer.getColoredArea()[row][col] + ", cellArea: " + cellArea);
 
             // // Check if the cell is filled >= threshold
             int isFilled = 0;
-            if (coloredArea[row][col] >= cellArea * Settings.COLOR_THRESHOLD) {
+            if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) {
                 isFilled = clientID;
             }
 
             // Add pixel information to the list, to be sent to the server
-            game.getPlayer(clientID).getPixelInfoList().add(new int[]{row, col, clientID, x, y, isFilled});
+            clientPlayer.getPixelInfoList().add(new int[]{row, col, clientID, x, y, isFilled});
         }
     }
 
@@ -175,40 +203,16 @@ public class Client1 extends JFrame {
         System.exit(0);
     }
 
-    public void connectServer() {
-        try {
-            client = new Socket("localhost", 7070);
-
-            in = new ObjectInputStream(client.getInputStream());
-            out = new ObjectOutputStream(client.getOutputStream());
-
-            clientID = in.readInt();
-            System.out.println("You are client #" + clientID + ", you are connected to the server!");
-            if (clientID == 1) {
-                System.out.println("Waiting for another client to connect...");
-            }
-        } catch (IOException e) {
-            System.out.println("Could not connect to server");
-            System.exit(-1);
-        }
-    }
-
     private void sendPixelInfoListToServer() {
         try {
             // Send each pixel information to the server
-            for (int[] pixelInfo : game.getPlayer(clientID).getPixelInfoList()) {
-                UpdatePacket packet = new UpdatePacket(0, pixelInfo);
-                packet.getData()[0] = pixelInfo[0];
-                packet.getData()[1] = pixelInfo[1];
-                packet.getData()[2] = pixelInfo[2];
-                packet.getData()[3] = pixelInfo[3];
-                packet.getData()[4] = pixelInfo[4];
-                packet.getData()[5] = pixelInfo[5];
+            for (int[] pixelInfo : clientPlayer.getPixelInfoList()) {
+                UpdatePacket packet = new UpdatePacket(0, 6,pixelInfo);
 
                 out.writeObject(packet);
             }
             out.flush(); // Flush the output stream to ensure all data is sent
-            game.getPlayer(clientID).getPixelInfoList().clear(); // Clear the pixelInfoList
+            clientPlayer.getPixelInfoList().clear(); // Clear the pixelInfoList
         } catch (IOException ex) {
             ex.printStackTrace();
         }
@@ -219,13 +223,24 @@ public class Client1 extends JFrame {
             try {
                 while (true) {
                     // Read the information from the server (Another client sent info and the server is relaying it back to you)
-                    int currentRow = in.readInt();
-                    int currentCol = in.readInt();
-                    int currentClientID = in.readInt();
-                    int currentX = in.readInt();
-                    int currentY = in.readInt();
-                    int currentIsFilled = in.readInt();
-                    int winner = in.readInt();
+                    UpdatePacket update = (UpdatePacket) Client1.this.in.readObject();
+                    if (update.getType() == 0) {
+
+                    } else if (update.getType() == 1) {
+
+                    } else if (update.getType() == 2) {
+                        // Update the game board
+                        
+                    }
+                    int currentRow = update.getData(0);
+                    int currentCol = update.getData(1);
+                    int currentClientID = update.getData(2);
+                    int currentX = update.getData(3);
+                    int currentY = update.getData(4);
+                    int currentIsFilled = update.getData(5);
+
+                    // This isn't used yet, but it's here for future use
+                    int winner = update.getData(6);
                     
                     // Update the game board
                     game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
@@ -268,14 +283,14 @@ public class Client1 extends JFrame {
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (ClassNotFoundException ex) {
+                ex.printStackTrace();
             }
         }
     }
 
     public static void main(String[] args) throws IOException {
         Client1 client = new Client1();
-        client.connectServer();
-        client.clientGUI(client.clientID);
 
         new Thread(client.new SyncServer()).start();
 

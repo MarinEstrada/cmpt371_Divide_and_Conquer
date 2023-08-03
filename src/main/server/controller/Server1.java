@@ -1,6 +1,6 @@
 package main.server.controller;
 
-import main.shared.messaging.Packet;
+import main.shared.messaging.*;
 import main.shared.model.Game;
 import main.shared.model.Settings;
 
@@ -127,20 +127,26 @@ public class Server1 {
     //     }
     // }
 
-    private void broadcastUpdate(Game game) {
+    private void broadcastUpdate(UpdatePacket packet) {
         if (client1 != null && client2 != null) {
             try {
                 // Sending the information received from a single client to all clients
-                objectOut1.writeObject(game);
-                objectOut2.writeObject(game);
+                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                    objectOutputStreams[i].writeObject(packet);
+                }
 
                 // Check if there is a winner
                 int winner = checkWinner();
-                out1.writeInt(winner);
-                out2.writeInt(winner);
+                int[] winnerInfo = {winner};
+                UpdatePacket winnerPacket = new UpdatePacket(2, 1, winnerInfo);
+                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                    objectOutputStreams[i].writeObject(winnerPacket);
+                }
 
-                objectOut1.flush();
-                objectOut2.flush();
+                // Flush the output streams
+                for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+                    objectOutputStreams[i].flush();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -193,20 +199,11 @@ public class Server1 {
         public void run() {
             try {
                 while (true) {
-                    // Read the information from the client
-                    Game game = (Game) in.readObject();
-
-                    broadcastUpdate(game);
-
-                    // int row = in.readInt();
-                    // int col = in.readInt();
-                    // int clientID = in.readInt();
-                    // int x = in.readInt();
-                    // int y = in.readInt();
-                    // int isFilled = in.readInt();
+                    // Receive the information from the client
+                    UpdatePacket packet = (UpdatePacket) in.readObject();
                     
-                    // // Broadcast the information to all clients
-                    // broadcastUpdate(row, col, clientID, x, y, isFilled);
+                    // Send it back out to all clients immediately
+                    broadcastUpdate(packet);
                 }
             } catch (IOException ex) {
                 System.out.println("IO exception");
