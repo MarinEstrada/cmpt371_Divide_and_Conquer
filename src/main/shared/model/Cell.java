@@ -1,7 +1,9 @@
 package main.shared.model;
 
+import java.io.Serializable;
+
 // This class is for managing the game board cells
-public class Cell {
+public class Cell implements Serializable {
     
     private final int row;
     private final int col;

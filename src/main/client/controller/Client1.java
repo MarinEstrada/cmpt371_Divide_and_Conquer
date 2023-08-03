@@ -66,11 +66,13 @@ public class Client1 extends JFrame {
         try {
             client = new Socket("localhost", 7070);
 
+            System.out.println("Got to line 69");
             in = new ObjectInputStream(client.getInputStream());
             out = new ObjectOutputStream(client.getOutputStream());
             
             // Retrieve the current state of the game from the server
             GamePacket packet = (GamePacket)in.readObject();
+            System.out.println("Got to line 75");
             game = packet.getGame();
             clientID = packet.getClientID();
             clientPlayer = game.getPlayer(clientID);
@@ -81,6 +83,7 @@ public class Client1 extends JFrame {
             }
         } catch (IOException e) {
             System.out.println("IOException: Could not connect to server in connectServer");
+            e.printStackTrace();
             System.exit(-1);
         } catch (ClassNotFoundException e) {
             System.out.println("Could not find class: GamePacket in connectServer");

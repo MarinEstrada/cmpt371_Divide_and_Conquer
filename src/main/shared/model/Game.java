@@ -5,7 +5,7 @@ import java.io.Serializable;
 
 
 // This class is responsible for managing the game state
-public class Game {
+public class Game implements Serializable{
     private final int MAX_PLAYERS;
 
     private final Player[] players;

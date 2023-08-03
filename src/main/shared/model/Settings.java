@@ -1,8 +1,9 @@
 package main.shared.model;
 
 import java.awt.*;
+import java.io.Serializable;
 
-public class Settings {
+public class Settings implements Serializable {
     // Common Settings
     public static final int NUM_CELLS = 4; // the number of cells in a row/column
 
