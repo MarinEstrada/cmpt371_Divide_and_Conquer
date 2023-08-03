@@ -80,10 +80,10 @@ public class Client1 extends JFrame {
                 System.out.println("Waiting for another client to connect...");
             }
         } catch (IOException e) {
-            System.out.println("Could not connect to server");
+            System.out.println("IOException: Could not connect to server in connectServer");
             System.exit(-1);
         } catch (ClassNotFoundException e) {
-            System.out.println("Could not find class: GamePacket");
+            System.out.println("Could not find class: GamePacket in connectServer");
             System.exit(-1);
         }
     }
@@ -282,8 +282,10 @@ public class Client1 extends JFrame {
                     });
                 }
             } catch (IOException ex) {
+                System.out.println("IO exception: In SyncServer");
                 ex.printStackTrace();
             } catch (ClassNotFoundException ex) {
+                System.out.println("Could not find class: UpdatePacket in SyncServer");
                 ex.printStackTrace();
             }
         }
