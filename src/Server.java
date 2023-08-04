@@ -9,15 +9,12 @@ public class Server {
     private DataOutputStream out1;
     private DataOutputStream out2;
 
-    private int[][] board;
     private int numClients;
 
-    private static final int NUM_CELLS = 4; // the number of cells in a row/column
     private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
     public void newServer() {
         numClients = 0;
-        board = new int[NUM_CELLS][NUM_CELLS];
 
         try {
             server = new ServerSocket(7070);
@@ -58,82 +55,15 @@ public class Server {
     private void broadcastUpdate(String str) {
         if (client1 != null && client2 != null) {
             try {
-//                String[] tokens = str.split("#");
-//                String[] lastToken = tokens[tokens.length - 1].split(";");
-//
-//                if (lastToken[0] != null && lastToken[1] != null && lastToken[5] != null) {
-//                    int row = Integer.parseInt(lastToken[0]);
-//                    int col = Integer.parseInt(lastToken[1]);
-//                    int isFilled = Integer.parseInt(lastToken[5]);
-//                    board[row][col] = isFilled;
-//                }
-
-
-                // // board
-                // board[row][col] = isFilled;
-
-                // out1.writeInt(row);
-                // out1.writeInt(col);
-                // out1.writeInt(clientID);
-                // out1.writeInt(x);
-                // out1.writeInt(y);
-                // out1.writeInt(isFilled);
-
-                // out2.writeInt(row);
-                // out2.writeInt(col);
-                // out2.writeInt(clientID);
-                // out2.writeInt(x);
-                // out2.writeInt(y);
-                // out2.writeInt(isFilled);
-
-
-
                 //write back
                 out1.writeUTF(str);
                 out2.writeUTF(str);
-
-//                 // Check if there is a winner
-//                 int winner = checkWinner();
-//                 out1.writeInt(winner);
-//                 out2.writeInt(winner);
 
                 out1.flush();
                 out2.flush();
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        }
-    }
-
-    private int checkWinner() {
-        // check if the board is full
-        for (int row = 0; row < NUM_CELLS; row++) {
-            for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
-                    return 0;
-                }
-            }
-        }
-
-        // check if there is a winner
-        int client1Count = 0;
-        int client2Count = 0;
-        for (int row = 0; row < NUM_CELLS; row++) {
-            for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 1) {
-                    client1Count++;
-                } else if (board[row][col] == 2) {
-                    client2Count++;
-                }
-            }
-        }
-
-        if (client1Count > client2Count) {
-            return 1;
-        } else if (client1Count < client2Count) {
-            return 2;
-        } else { // draw
-            return -1;
         }
     }
 
@@ -147,13 +77,6 @@ public class Server {
         public void run() {
             try {
                 while (true) {
-                    // int row = in.readInt();
-                    // int col = in.readInt();
-                    // int clientID = in.readInt();
-                    // int x = in.readInt();
-                    // int y = in.readInt();
-                    // int isFilled = in.readInt();
-
                     // receive the string
                     String str = in.readUTF();
                     // if string is empty
@@ -161,8 +84,6 @@ public class Server {
                         System.out.println("Received: " + str);
                         broadcastUpdate(str);
                     }
-
-                    
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -181,6 +102,7 @@ public class Server {
                 System.out.println("Server closed.");
             }
         } catch (IOException e) {
+            System.out.println("Could not close server.");
             e.printStackTrace();
         }
     }

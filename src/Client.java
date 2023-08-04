@@ -186,59 +186,6 @@ public class Client extends JFrame {
         System.exit(0);
     }
 
-    public void connectServer() {
-        try {
-            client = new Socket("localhost", 7070);
-
-            in = new DataInputStream(client.getInputStream());
-            out = new DataOutputStream(client.getOutputStream());
-
-            clientID = in.readInt();
-            System.out.println("You are client #" + clientID + ", you are connected to the server!");
-            if (clientID == 1) {
-                System.out.println("Waiting for another client to connect...");
-            }
-        } catch (IOException e) {
-            System.out.println("Could not connect to server");
-            System.exit(-1);
-        }
-    }
-
-    private void sendPixelInfoListToServer() {
-        try {
-            // // Send each pixel information to the server
-            // for (int[] pixelInfo : pixelInfoList) {
-            //     out.writeInt(pixelInfo[0]); // row
-            //     out.writeInt(pixelInfo[1]); // col
-            //     out.writeInt(pixelInfo[2]); // clientID
-            //     out.writeInt(pixelInfo[3]); // x
-            //     out.writeInt(pixelInfo[4]); // y
-            //     out.writeInt(pixelInfo[5]); // isFilled
-            // }
-            // save each pixel info to a string
-            StringBuilder tokenizedMessage = new StringBuilder();
-            // Send each pixel information to the server
-            for (int[] pixelInfo : pixelInfoList) {
-                tokenizedMessage.append(pixelInfo[0]).append(";"); // row
-                tokenizedMessage.append(pixelInfo[1]).append(";"); // col
-                tokenizedMessage.append(pixelInfo[2]).append(";"); // clientID
-                tokenizedMessage.append(pixelInfo[3]).append(";"); // x
-                tokenizedMessage.append(pixelInfo[4]).append(";"); // y
-                tokenizedMessage.append(pixelInfo[5]).append("#"); // isFilled
-            }
-
-            // send the string to server
-            out.writeUTF(tokenizedMessage.toString());
-            
-
-
-            out.flush(); // Flush the output stream to ensure all data is sent
-            pixelInfoList.clear(); // Clear the pixelInfoList
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private int checkWinner() {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
@@ -271,29 +218,62 @@ public class Client extends JFrame {
         }
     }
 
+    public void connectServer() {
+        try {
+            client = new Socket("localhost", 7070);
+
+            in = new DataInputStream(client.getInputStream());
+            out = new DataOutputStream(client.getOutputStream());
+
+            clientID = in.readInt();
+            System.out.println("You are client #" + clientID + ", you are connected to the server!");
+            if (clientID == 1) {
+                System.out.println("Waiting for another client to connect...");
+            }
+        } catch (IOException e) {
+            System.out.println("Could not connect to server");
+            System.exit(-1);
+        }
+    }
+
+    private void sendPixelInfoListToServer() {
+        try {
+            // save each pixel info to a string
+            StringBuilder tokenizedMessage = new StringBuilder();
+            // Send each pixel information to the server
+            for (int[] pixelInfo : pixelInfoList) {
+                tokenizedMessage.append(pixelInfo[0]).append(";"); // row
+                tokenizedMessage.append(pixelInfo[1]).append(";"); // col
+                tokenizedMessage.append(pixelInfo[2]).append(";"); // clientID
+                tokenizedMessage.append(pixelInfo[3]).append(";"); // x
+                tokenizedMessage.append(pixelInfo[4]).append(";"); // y
+                tokenizedMessage.append(pixelInfo[5]).append("#"); // isFilled
+            }
+
+            // send the string to server
+            out.writeUTF(tokenizedMessage.toString());
+            
+            out.flush(); // Flush the output stream to ensure all data is sent
+            pixelInfoList.clear(); // Clear the pixelInfoList
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private class SyncServer implements Runnable {
         public void run() {
             try {
                 while (true) {
-                    // int currentRow = in.readInt();
-                    // int currentCol = in.readInt();
-                    // int currentClientID = in.readInt();
-                    // int currentX = in.readInt();
-                    // int currentY = in.readInt();
-                    // int currentIsFilled = in.readInt();
-                    // int winner = in.readInt();
-
                     // read the string from server
                     String tokenizedMessage = in.readUTF();
-//                    int winner = in.readInt();
-
+                    
+                    // tokenize the string
                     String[] tokens = tokenizedMessage.split("#");
                     String[] lastToken = tokens[tokens.length - 1].split(";");
 
+                    // read the token if it is valid
                     if (lastToken.length == 6) {
-
-                        System.out.println("lastToken: " + lastToken[0] + ", " + lastToken[1] + ", " + lastToken[2] + ", " + lastToken[3] + ", " + lastToken[4] + ", " + lastToken[5]);
-                        // read the token if it is valid
+                        // System.out.println("lastToken: " + lastToken[0] + ", " + lastToken[1] + ", " + lastToken[2] + ", " + lastToken[3] + ", " + lastToken[4] + ", " + lastToken[5]);
                         int currentRow = Integer.parseInt(lastToken[0]);
                         int currentCol = Integer.parseInt(lastToken[1]);
                         int currentClientID = Integer.parseInt(lastToken[2]);
