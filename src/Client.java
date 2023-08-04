@@ -21,6 +21,7 @@ public class Client extends JFrame {
     private boolean[][][][] coloredPixels;
 
     private boolean isGameTerminated = false;
+    int winner = 0;
 
     // constants
     private static final int NUM_CELLS = 4; // the number of cells in a row/column
@@ -238,6 +239,38 @@ public class Client extends JFrame {
         }
     }
 
+    private int checkWinner() {
+        // check if the board is full
+        for (int row = 0; row < NUM_CELLS; row++) {
+            for (int col = 0; col < NUM_CELLS; col++) {
+                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
+                    return 0;
+                }
+            }
+        }
+
+        // check if there is a winner
+        int client1Count = 0;
+        int client2Count = 0;
+        for (int row = 0; row < NUM_CELLS; row++) {
+            for (int col = 0; col < NUM_CELLS; col++) {
+                if (board[row][col] == 1) {
+                    client1Count++;
+                } else if (board[row][col] == 2) {
+                    client2Count++;
+                }
+            }
+        }
+
+        if (client1Count > client2Count) {
+            return 1;
+        } else if (client1Count < client2Count) {
+            return 2;
+        } else { // draw
+            return -1;
+        }
+    }
+
     private class SyncServer implements Runnable {
         public void run() {
             try {
@@ -252,54 +285,65 @@ public class Client extends JFrame {
 
                     // read the string from server
                     String tokenizedMessage = in.readUTF();
+//                    int winner = in.readInt();
 
                     String[] tokens = tokenizedMessage.split("#");
                     String[] lastToken = tokens[tokens.length - 1].split(";");
-                    int currentRow = Integer.parseInt(lastToken[0]);
-                    int currentCol = Integer.parseInt(lastToken[1]);
-                    int currentClientID = Integer.parseInt(lastToken[2]);
-                    int currentX = Integer.parseInt(lastToken[3]);
-                    int currentY = Integer.parseInt(lastToken[4]);
-                    int currentIsFilled = Integer.parseInt(lastToken[5]);
 
-                    System.out.println("currentClientID: " + currentClientID + "is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);
+                    if (lastToken.length == 6) {
 
-                    board[currentRow][currentCol] = currentIsFilled;
-                    boardCurrentStatus[currentRow][currentCol] = currentClientID;
+                        System.out.println("lastToken: " + lastToken[0] + ", " + lastToken[1] + ", " + lastToken[2] + ", " + lastToken[3] + ", " + lastToken[4] + ", " + lastToken[5]);
+                        // read the token if it is valid
+                        int currentRow = Integer.parseInt(lastToken[0]);
+                        int currentCol = Integer.parseInt(lastToken[1]);
+                        int currentClientID = Integer.parseInt(lastToken[2]);
+                        int currentX = Integer.parseInt(lastToken[3]);
+                        int currentY = Integer.parseInt(lastToken[4]);
+                        int currentIsFilled = Integer.parseInt(lastToken[5]);
 
-                    SwingUtilities.invokeLater(() -> {
-                        // draw on board/cell
-                        JPanel cell = (JPanel) boardPanel.getComponent(currentRow * NUM_CELLS + currentCol);
-                        Graphics boardImage = cell.getGraphics();
-                        boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
-                        boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
+                        System.out.println("currentClientID: " + currentClientID + "is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);
+
+                        board[currentRow][currentCol] = currentIsFilled;
+                        boardCurrentStatus[currentRow][currentCol] = currentClientID;
+                        winner = checkWinner();
+
+                        SwingUtilities.invokeLater(() -> {
+                            // draw on board/cell
+                            JPanel cell = (JPanel) boardPanel.getComponent(currentRow * NUM_CELLS + currentCol);
+                            Graphics boardImage = cell.getGraphics();
+                            boardImage.setColor(currentClientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR);
+                            boardImage.fillRect(currentX, currentY, BRUSH_SIZE, BRUSH_SIZE);
 
 
-                        // if player released before threshold, clear cell
-                        if (currentIsFilled == -1) {
-                            System.out.println("SYNC Removing drawnlines");
-                            cell.removeAll();
-                            cell.revalidate();
-                            cell.repaint();
-                        }
+                            // if player released before threshold, clear cell
+                            if (currentIsFilled == -1) {
+                                System.out.println("SYNC Removing drawnlines");
+                                cell.removeAll();
+                                cell.revalidate();
+                                cell.repaint();
+                            }
 
-                        // fill cell if passed threshold
-                        if (currentIsFilled != 0 && currentIsFilled != -1) {
-                            boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
-                        }
+                            // fill cell if passed threshold
+                            if (currentIsFilled != 0 && currentIsFilled != -1) {
+                                boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
+                            }
 
-                        // // announce winner
-                        // if ((winner == -1 || winner == 1 || winner == 2) && !isGameTerminated) {
-                        //     isGameTerminated = true;
-                        //     if (winner == clientID) {
-                        //         printGameResult("You win!");
-                        //     } else if (winner == -1) {
-                        //         printGameResult("Draw!");
-                        //     } else {
-                        //         printGameResult("You lose!");
-                        //     }
-                        // }
-                    });
+                             // announce winner
+                             if ((winner == -1 || winner == 1 || winner == 2) && !isGameTerminated) {
+                                 isGameTerminated = true;
+                                 if (winner == clientID) {
+                                     printGameResult("You win!");
+                                 } else if (winner == -1) {
+                                     printGameResult("Draw!");
+                                 } else {
+                                     printGameResult("You lose!");
+                                 }
+                             }
+                        });
+                    }
+
+
+
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();

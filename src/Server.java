@@ -58,6 +58,17 @@ public class Server {
     private void broadcastUpdate(String str) {
         if (client1 != null && client2 != null) {
             try {
+//                String[] tokens = str.split("#");
+//                String[] lastToken = tokens[tokens.length - 1].split(";");
+//
+//                if (lastToken[0] != null && lastToken[1] != null && lastToken[5] != null) {
+//                    int row = Integer.parseInt(lastToken[0]);
+//                    int col = Integer.parseInt(lastToken[1]);
+//                    int isFilled = Integer.parseInt(lastToken[5]);
+//                    board[row][col] = isFilled;
+//                }
+
+
                 // // board
                 // board[row][col] = isFilled;
 
@@ -75,14 +86,16 @@ public class Server {
                 // out2.writeInt(y);
                 // out2.writeInt(isFilled);
 
-                // // Check if there is a winner
-                // int winner = checkWinner();
-                // out1.writeInt(winner);
-                // out2.writeInt(winner);
+
 
                 //write back
                 out1.writeUTF(str);
                 out2.writeUTF(str);
+
+//                 // Check if there is a winner
+//                 int winner = checkWinner();
+//                 out1.writeInt(winner);
+//                 out2.writeInt(winner);
 
                 out1.flush();
                 out2.flush();
@@ -146,7 +159,6 @@ public class Server {
                     // if string is empty
                     if (!str.equals("")) {
                         System.out.println("Received: " + str);
-
                         broadcastUpdate(str);
                     }
 
