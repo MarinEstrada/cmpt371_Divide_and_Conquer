@@ -6,12 +6,17 @@ import java.util.List;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import java.net.*;
+
 // This class if for managing the player state and client to client information
 // - What the client knows about the game
 // - What the server knows about the client
 public class Player implements Serializable {
+    
     private final int clientID;
     
+    // Networking variables
+    Socket clientSocket;
     ObjectInputStream objectIn;
     ObjectOutputStream objectOut;
 

@@ -1,8 +1,7 @@
 package main.server.controller;
 
 import main.shared.messaging.*;
-import main.shared.model.Game;
-import main.shared.model.Settings;
+import main.shared.model.*;
 
 import java.io.*;
 import java.net.*;
@@ -17,24 +16,30 @@ public class Server1 {
     private Game game;
     private int numClients;
 
-
     public void initServer() {
         numClients = 0;
         game = new Game(Settings.NUM_CELLS, Settings.MAX_PLAYERS);
 
         try {
+            // Creates a server socket that listens on port 7070 that clients can connect to
             ServerSocket serverSocket = new ServerSocket(7070);
             System.out.println("Server listening on port 7070...");
 
             while (true) {
+                // Creates an individual socket for communication between the server and an individual client
                 Socket clientSocket = serverSocket.accept();
+                numClients++;
+
                 System.out.println("Client connected: " + clientSocket.getInetAddress().getHostAddress());
 
                 // Create streams for communication with the client
                 ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
                 ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
 
-                GamePacket initialGameState = new GamePacket(numClients, game);
+                Player player = new Player(numClients - 1, Settings.NUM_CELLS, Settings.BOARD_SIZE);
+                game.addPlayer(player);
+
+                GamePacket initialGameState = new GamePacket(numClients - 1, game);
                 out.writeObject(initialGameState);
 
                 outputStreams.add(out);

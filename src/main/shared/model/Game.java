@@ -3,6 +3,8 @@ package main.shared.model;
 import java.io.IOException;
 import java.io.Serializable;
 
+import javax.swing.JPanel;
+
 
 // This class is responsible for managing the game state
 public class Game implements Serializable{
@@ -35,6 +37,35 @@ public class Game implements Serializable{
         }
     }
 
+    // Checks to see whether or not the cell is filled >= threshold
+    private void checkThreshold(JPanel cell, int row, int col, int x, int y) {
+        int cellWidth = cell.getWidth();
+        int cellHeight = cell.getHeight();
+        int cellArea = cellWidth * cellHeight;
+        int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
+
+        // Check if the cell is filled >= threshold
+        if (currOwnerID == 0 || currOwnerID == -1) {
+            int isFilled = 0;
+            if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
+                isFilled = clientID;
+            } else { // if not filled, clear cell
+                clientPlayer.getColoredArea()[row][col] = 0;
+
+                cell.removeAll();
+                cell.revalidate();
+                cell.repaint();
+                isFilled = -1;
+                for (int i = 0; i < cellWidth; i++) { // flush coloredPixels
+                    for (int j = 0; j < cellHeight; j++) {
+                        clientPlayer.getColoredPixels()[row][col][i][j] = false;
+                    }
+                }
+            }
+            clientPlayer.getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
+        }
+    }
+
     public GameBoard getGameBoard() {
         return this.gameBoard;
     }
@@ -55,6 +86,15 @@ public class Game implements Serializable{
     // Game logic
     public boolean isValidMove(int row, int col) {
         return gameBoard.getCell(row, col).isOwned();
+    }
+
+    public void addPlayer(Player player) {
+        for (int i = 0; i < MAX_PLAYERS; i++) {
+            if (players[i] == null) {
+                players[i] = player;
+                break;
+            }
+        }
     }
 
     // Update the game state based on a player's move

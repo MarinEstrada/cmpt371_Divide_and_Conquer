@@ -26,6 +26,45 @@ public class Client1 extends JFrame {
         game = new Game(Settings.NUM_CELLS, 2); 
     }
 
+    // This is for connecting to the server
+    public void connectServer() {
+        try {
+            client = new Socket("localhost", 7070);
+
+            System.out.println("Got to line 69");
+
+            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+            
+            // Retrieve the current state of the game from the server
+            GamePacket packet = (GamePacket)in.readObject();
+
+            System.out.println("Got to line 75");
+            game = packet.getGame();
+            clientID = packet.getClientID();
+            System.out.println("clientID: " + clientID);
+            clientPlayer = game.getPlayer(clientID);
+            
+            if (clientPlayer == null) {
+                clientPlayer = new Player(clientID, Settings.NUM_CELLS, Settings.BOARD_SIZE);
+                game.addPlayer(clientPlayer);
+            }
+
+            System.out.println("You are client #" + clientID + ", you are connected to the server!");
+            if (clientID == 1) {
+                System.out.println("Waiting for another client to connect...");
+            }
+        } catch (IOException e) {
+            System.out.println("IOException: Could not connect to server in connectServer");
+            e.printStackTrace();
+            System.exit(-1);
+        } catch (ClassNotFoundException e) {
+            System.out.println("Could not find class: GamePacket in connectServer");
+            System.exit(-1);
+        }
+    }
+
+    // This function is for initializing the GUI
     public void clientGUI() {
         // Initialize the colored area in the cell if it isn't already initialized (a reconnect)
         if (clientPlayer.getColoredArea() == null) {
@@ -50,48 +89,12 @@ public class Client1 extends JFrame {
         add(boardPanel);
         setLocationRelativeTo(null); // board appears in middle of screen
         setResizable(false);
-
-        updateBoard();
-
+        initPanels();
         setVisible(true);
     }
 
-    public void connectServer() {
-        try {
-            client = new Socket("localhost", 7070);
-
-            System.out.println("Got to line 69");
-
-            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-            
-            // Retrieve the current state of the game from the server
-            GamePacket packet = (GamePacket)in.readObject();
-
-            System.out.println("Got to line 75");
-            game = packet.getGame();
-            clientID = packet.getClientID();
-            clientPlayer = game.getPlayer(clientID);
-
-            if (clientPlayer == null) {
-                clientPlayer = new Player(clientID, Settings.NUM_CELLS, Settings.BOARD_SIZE);
-            }
-
-            System.out.println("You are client #" + clientID + ", you are connected to the server!");
-            if (clientID == 1) {
-                System.out.println("Waiting for another client to connect...");
-            }
-        } catch (IOException e) {
-            System.out.println("IOException: Could not connect to server in connectServer");
-            e.printStackTrace();
-            System.exit(-1);
-        } catch (ClassNotFoundException e) {
-            System.out.println("Could not find class: GamePacket in connectServer");
-            System.exit(-1);
-        }
-    }
-
-    private void updateBoard() {
+    // Initializes the JPanels for mouse listening and painting
+    private void initPanels() {
         for (int i = 0; i < Settings.NUM_CELLS; i++) {
             for (int j = 0; j < Settings.NUM_CELLS; j++) {
                 // Create a JPanel for each cell
@@ -124,33 +127,6 @@ public class Client1 extends JFrame {
                 // Add the JPanel to the board
                 boardPanel.add(cell);
             }
-        }
-    }
-
-    private void checkThreshold(JPanel cell, int row, int col, int x, int y) {
-        int cellWidth = cell.getWidth();
-        int cellHeight = cell.getHeight();
-        int cellArea = cellWidth * cellHeight;
-        int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
-
-        // Check if the cell is filled >= threshold
-        if (currOwnerID == 0 || currOwnerID == -1) {
-            int isFilled = 0;
-            if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
-                isFilled = clientID;
-            } else { // if not filled, clear cell
-                clientPlayer.getColoredArea()[row][col] = 0;
-                cell.removeAll();
-                cell.revalidate();
-                cell.repaint();
-                isFilled = -1;
-                for (int i = 0; i < cellWidth; i++) { // flush coloredPixels
-                    for (int j = 0; j < cellHeight; j++) {
-                        clientPlayer.getColoredPixels()[row][col][i][j] = false;
-                    }
-                }
-            }
-            game.getPlayer(clientID).getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
@@ -210,8 +186,9 @@ public class Client1 extends JFrame {
         try {
             // Send each pixel information to the server
             ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+
             for (int[] pixelInfo : clientPlayer.getPixelInfoList()) {
-                UpdatePacket packet = new UpdatePacket(0, 6,pixelInfo);
+                UpdatePacket packet = new UpdatePacket(0, 6, pixelInfo);
                 out.writeObject(packet);
             }
             out.flush(); // Flush the output stream to ensure all data is sent
@@ -227,15 +204,8 @@ public class Client1 extends JFrame {
                 while (true) {
                     // Read the information from the server (Another client sent info and the server is relaying it back to you)
                     ObjectInputStream in = new ObjectInputStream(client.getInputStream());
-                    UpdatePacket update = (UpdatePacket) in.readObject();
-                    if (update.getType() == 0) {
-
-                    } else if (update.getType() == 1) {
-
-                    } else if (update.getType() == 2) {
-                        // Update the game board
-                        
-                    }
+                    UpdatePacket update = (UpdatePacket)in.readObject();
+                    
                     int currentRow = update.getData(0);
                     int currentCol = update.getData(1);
                     int currentClientID = update.getData(2);
@@ -244,7 +214,7 @@ public class Client1 extends JFrame {
                     int currentIsFilled = update.getData(5);
 
                     // This isn't used yet, but it's here for future use
-                    update = (UpdatePacket) in.readObject();
+                    update = (UpdatePacket)in.readObject();
                     int winner = update.getData(0);
                     
                     // Update the game board
@@ -303,7 +273,7 @@ public class Client1 extends JFrame {
         new Thread(client.new SyncServer()).start();
 
         // Periodically send pixelInfoList to server
-        Timer timer = new Timer(50, e -> {
+        Timer timer = new Timer(10, e -> {
             client.sendPixelInfoListToServer();
         });
         timer.start();

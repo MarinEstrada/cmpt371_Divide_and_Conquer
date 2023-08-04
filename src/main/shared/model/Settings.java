@@ -13,6 +13,8 @@ public class Settings implements Serializable {
     public static final int BRUSH_SIZE = 10; // the size of the brush
     public static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
     public static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
+    public static final Color CLIENT3_COLOR = Color.GREEN; // the color for client 3
+    public static final Color CLIENT4_COLOR = Color.ORANGE; // the color for client 4
 
     // Server Settings
     public static final int MAX_PLAYERS = 2; // the maximum number of clients
