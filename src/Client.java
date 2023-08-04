@@ -136,7 +136,7 @@ public class Client extends JFrame {
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
-            System.out.println("boardCurrentStatus[" + row + "][" + col + "] = " + boardCurrentStatus[row][col]);
+            // System.out.println("boardCurrentStatus[" + row + "][" + col + "] = " + boardCurrentStatus[row][col]);
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
@@ -167,7 +167,7 @@ public class Client extends JFrame {
                 }
             }
 
-            System.out.println("coloredArea: " + coloredArea[row][col] + ", cellArea: " + cellArea);
+            // System.out.println("coloredArea: " + coloredArea[row][col] + ", cellArea: " + cellArea);
 
             // // Check if the cell is filled >= threshold
             int isFilled = 0;
@@ -205,15 +205,32 @@ public class Client extends JFrame {
 
     private void sendPixelInfoListToServer() {
         try {
+            // // Send each pixel information to the server
+            // for (int[] pixelInfo : pixelInfoList) {
+            //     out.writeInt(pixelInfo[0]); // row
+            //     out.writeInt(pixelInfo[1]); // col
+            //     out.writeInt(pixelInfo[2]); // clientID
+            //     out.writeInt(pixelInfo[3]); // x
+            //     out.writeInt(pixelInfo[4]); // y
+            //     out.writeInt(pixelInfo[5]); // isFilled
+            // }
+            // save each pixel info to a string
+            StringBuilder tokenizedMessage = new StringBuilder();
             // Send each pixel information to the server
             for (int[] pixelInfo : pixelInfoList) {
-                out.writeInt(pixelInfo[0]); // row
-                out.writeInt(pixelInfo[1]); // col
-                out.writeInt(pixelInfo[2]); // clientID
-                out.writeInt(pixelInfo[3]); // x
-                out.writeInt(pixelInfo[4]); // y
-                out.writeInt(pixelInfo[5]); // isFilled
+                tokenizedMessage.append(pixelInfo[0]).append(";"); // row
+                tokenizedMessage.append(pixelInfo[1]).append(";"); // col
+                tokenizedMessage.append(pixelInfo[2]).append(";"); // clientID
+                tokenizedMessage.append(pixelInfo[3]).append(";"); // x
+                tokenizedMessage.append(pixelInfo[4]).append(";"); // y
+                tokenizedMessage.append(pixelInfo[5]).append("#"); // isFilled
             }
+
+            // send the string to server
+            out.writeUTF(tokenizedMessage.toString());
+            
+
+
             out.flush(); // Flush the output stream to ensure all data is sent
             pixelInfoList.clear(); // Clear the pixelInfoList
         } catch (IOException ex) {
@@ -225,13 +242,27 @@ public class Client extends JFrame {
         public void run() {
             try {
                 while (true) {
-                    int currentRow = in.readInt();
-                    int currentCol = in.readInt();
-                    int currentClientID = in.readInt();
-                    int currentX = in.readInt();
-                    int currentY = in.readInt();
-                    int currentIsFilled = in.readInt();
-                    int winner = in.readInt();
+                    // int currentRow = in.readInt();
+                    // int currentCol = in.readInt();
+                    // int currentClientID = in.readInt();
+                    // int currentX = in.readInt();
+                    // int currentY = in.readInt();
+                    // int currentIsFilled = in.readInt();
+                    // int winner = in.readInt();
+
+                    // read the string from server
+                    String tokenizedMessage = in.readUTF();
+
+                    String[] tokens = tokenizedMessage.split("#");
+                    String[] lastToken = tokens[tokens.length - 1].split(";");
+                    int currentRow = Integer.parseInt(lastToken[0]);
+                    int currentCol = Integer.parseInt(lastToken[1]);
+                    int currentClientID = Integer.parseInt(lastToken[2]);
+                    int currentX = Integer.parseInt(lastToken[3]);
+                    int currentY = Integer.parseInt(lastToken[4]);
+                    int currentIsFilled = Integer.parseInt(lastToken[5]);
+
+                    System.out.println("currentClientID: " + currentClientID + "is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);
 
                     board[currentRow][currentCol] = currentIsFilled;
                     boardCurrentStatus[currentRow][currentCol] = currentClientID;
@@ -257,17 +288,17 @@ public class Client extends JFrame {
                             boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
                         }
 
-                        // announce winner
-                        if ((winner == -1 || winner == 1 || winner == 2) && !isGameTerminated) {
-                            isGameTerminated = true;
-                            if (winner == clientID) {
-                                printGameResult("You win!");
-                            } else if (winner == -1) {
-                                printGameResult("Draw!");
-                            } else {
-                                printGameResult("You lose!");
-                            }
-                        }
+                        // // announce winner
+                        // if ((winner == -1 || winner == 1 || winner == 2) && !isGameTerminated) {
+                        //     isGameTerminated = true;
+                        //     if (winner == clientID) {
+                        //         printGameResult("You win!");
+                        //     } else if (winner == -1) {
+                        //         printGameResult("Draw!");
+                        //     } else {
+                        //         printGameResult("You lose!");
+                        //     }
+                        // }
                     });
                 }
             } catch (IOException ex) {
@@ -297,7 +328,7 @@ public class Client extends JFrame {
         new Thread(client.new SyncServer()).start();
 
         // Periodically send pixelInfoList to server
-        Timer timer = new Timer(100, e -> {
+        Timer timer = new Timer(10, e -> {
             client.sendPixelInfoListToServer();
         });
         timer.start();

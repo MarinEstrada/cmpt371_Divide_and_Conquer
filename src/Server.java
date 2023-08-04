@@ -55,30 +55,34 @@ public class Server {
         }
     }
 
-    private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
+    private void broadcastUpdate(String str) {
         if (client1 != null && client2 != null) {
             try {
-                // board
-                board[row][col] = isFilled;
+                // // board
+                // board[row][col] = isFilled;
 
-                out1.writeInt(row);
-                out1.writeInt(col);
-                out1.writeInt(clientID);
-                out1.writeInt(x);
-                out1.writeInt(y);
-                out1.writeInt(isFilled);
+                // out1.writeInt(row);
+                // out1.writeInt(col);
+                // out1.writeInt(clientID);
+                // out1.writeInt(x);
+                // out1.writeInt(y);
+                // out1.writeInt(isFilled);
 
-                out2.writeInt(row);
-                out2.writeInt(col);
-                out2.writeInt(clientID);
-                out2.writeInt(x);
-                out2.writeInt(y);
-                out2.writeInt(isFilled);
+                // out2.writeInt(row);
+                // out2.writeInt(col);
+                // out2.writeInt(clientID);
+                // out2.writeInt(x);
+                // out2.writeInt(y);
+                // out2.writeInt(isFilled);
 
-                // Check if there is a winner
-                int winner = checkWinner();
-                out1.writeInt(winner);
-                out2.writeInt(winner);
+                // // Check if there is a winner
+                // int winner = checkWinner();
+                // out1.writeInt(winner);
+                // out2.writeInt(winner);
+
+                //write back
+                out1.writeUTF(str);
+                out2.writeUTF(str);
 
                 out1.flush();
                 out2.flush();
@@ -130,14 +134,23 @@ public class Server {
         public void run() {
             try {
                 while (true) {
-                    int row = in.readInt();
-                    int col = in.readInt();
-                    int clientID = in.readInt();
-                    int x = in.readInt();
-                    int y = in.readInt();
-                    int isFilled = in.readInt();
+                    // int row = in.readInt();
+                    // int col = in.readInt();
+                    // int clientID = in.readInt();
+                    // int x = in.readInt();
+                    // int y = in.readInt();
+                    // int isFilled = in.readInt();
 
-                    broadcastUpdate(row, col, clientID, x, y, isFilled);
+                    // receive the string
+                    String str = in.readUTF();
+                    // if string is empty
+                    if (!str.equals("")) {
+                        System.out.println("Received: " + str);
+
+                        broadcastUpdate(str);
+                    }
+
+                    
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
