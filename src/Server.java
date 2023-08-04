@@ -10,7 +10,6 @@ public class Server {
     private DataOutputStream out2;
 
     private int numClients;
-
     private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
     public void newServer() {
@@ -43,6 +42,8 @@ public class Server {
                 } else {
                     client2 = client;
                     out2 = out;
+
+                    sendGameStartMessage();
                 }
 
                 new Thread(new SyncClients(in)).start();
@@ -50,6 +51,20 @@ public class Server {
         } catch (IOException e) {
             System.out.println("Accept failed: 7070");
             System.exit(-1);
+        }
+    }
+
+    private void sendGameStartMessage() {
+        if (client1 != null && client2 != null) {
+            try {
+                out1.writeUTF("start");
+                out2.writeUTF("start");
+
+                out1.flush();
+                out2.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
