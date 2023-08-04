@@ -31,8 +31,9 @@ public class Server {
                 Socket client = server.accept();
                 numClients++;
 
-                DataInputStream in = new DataInputStream(client.getInputStream());
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
+                DataInputStream in = new DataInputStream(client.getInputStream());
+                
                 out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
@@ -44,7 +45,7 @@ public class Server {
                     out2 = out;
                 }
 
-                new Thread(new SyncClients(numClients, in)).start();
+                new Thread(new SyncClients(in)).start();
             }
         } catch (IOException e) {
             System.out.println("Accept failed: 7070");
@@ -70,7 +71,7 @@ public class Server {
     private class SyncClients implements Runnable {
         private DataInputStream in;
 
-        public SyncClients(int clientID, DataInputStream in) {
+        public SyncClients(DataInputStream in) {
             this.in = in;
         }
 

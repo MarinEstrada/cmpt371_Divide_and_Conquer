@@ -10,10 +10,10 @@ import java.util.List;
 public class Client extends JFrame {
     private Socket client;
     private int clientID;
-    private DataInputStream in;
     private DataOutputStream out;
+    private DataInputStream in;
+    
     private final List<int[]> pixelInfoList = new ArrayList<>();
-
     private JPanel boardPanel;
     private int[][] board;
     private int[][] boardCurrentStatus;
@@ -222,9 +222,9 @@ public class Client extends JFrame {
         try {
             client = new Socket("localhost", 7070);
 
-            in = new DataInputStream(client.getInputStream());
             out = new DataOutputStream(client.getOutputStream());
-
+            in = new DataInputStream(client.getInputStream());
+            
             clientID = in.readInt();
             System.out.println("You are client #" + clientID + ", you are connected to the server!");
             if (clientID == 1) {
