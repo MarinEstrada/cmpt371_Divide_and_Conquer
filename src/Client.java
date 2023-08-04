@@ -21,6 +21,7 @@ public class Client extends JFrame {
     private int[][] coloredArea;
     private boolean[][][][] coloredPixels;
 
+    private boolean isMouseInsideCell = false;
     private boolean isGameStarted = false;
     private boolean isGameTerminated = false;
     int winner = 0;
@@ -104,11 +105,17 @@ public class Client extends JFrame {
                     @Override
                     public void mousePressed(MouseEvent e) {
                         paintCell(cell, row, col, e.getX(), e.getY());
+                        isMouseInsideCell = true;
                     }
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
                         checkThreshold(cell, row, col, e.getX(), e.getY());
+                        isMouseInsideCell = false;
+                    }
+
+                    public void mouseExited(MouseEvent e) {
+                        isMouseInsideCell = false;
                     }
                 });
 
@@ -116,7 +123,11 @@ public class Client extends JFrame {
                 cell.addMouseMotionListener(new MouseMotionAdapter() {
                     @Override
                     public void mouseDragged(MouseEvent e) {
-                        paintCell(cell, row, col, e.getX(), e.getY());
+                        if (isMouseInsideCell) {
+                            paintCell(cell, row, col, e.getX(), e.getY());
+                        } else {
+                            checkThreshold(cell, row, col, e.getX(), e.getY());
+                        }
                     }
                 });
 
