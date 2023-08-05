@@ -145,6 +145,7 @@ public class Client extends JFrame {
         // Check if the cell is filled >= threshold
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             int isFilled = 0;
+            int belongsTo = clientID;
             if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
             } else { // if not filled, clear cell
@@ -153,14 +154,24 @@ public class Client extends JFrame {
                 cell.revalidate();
                 cell.repaint();
                 isFilled = -1;
+                belongsTo = 0;
                 for (int i = 0; i < cellWidth; i++) { // flush coloredPixels
                     for (int j = 0; j < cellHeight; j++) {
                         coloredPixels[row][col][i][j] = false;
                     }
                 }
             }
-            pixelInfoList.add(new int[]{row, col, 0, x, y, isFilled});
+            pixelInfoList.add(new int[]{row, col, belongsTo, x, y, isFilled});
         }
+    }
+
+    private Color setBrushColor(){
+        if(clientID == 1) return CLIENT1_COLOR;
+        else if(clientID == 2) return CLIENT2_COLOR;
+
+        //if no match, there is an error. Return black
+        System.out.println("CLIENT NOT RECOGNIZED");
+        return Color.BLACK;
     }
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
@@ -200,9 +211,6 @@ public class Client extends JFrame {
 
             // // Check if the cell is filled >= threshold
             int isFilled = 0;
-            if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) {
-                isFilled = clientID;
-            }
 
             // Add pixel information to the list, to be sent to the server
             pixelInfoList.add(new int[]{row, col, clientID, x, y, isFilled});
@@ -325,7 +333,7 @@ public class Client extends JFrame {
                             int currentY = Integer.parseInt(extractNumericDigits(lastToken[4]));
                             int currentIsFilled = Integer.parseInt(lastToken[5]);
 
-                            System.out.println("currentClientID: " + currentClientID + "is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);
+                            System.out.println("currentClientID: " + currentClientID + " is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);
 
                             board[currentRow][currentCol] = currentIsFilled;
                             boardCurrentStatus[currentRow][currentCol] = currentClientID;
