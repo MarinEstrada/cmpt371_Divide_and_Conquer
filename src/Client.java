@@ -154,6 +154,15 @@ public class Client extends JFrame {
         }
     }
 
+    private Color setBrushColor(){
+        if(clientID == 1) return CLIENT1_COLOR;
+        else if(clientID == 2) return CLIENT2_COLOR;
+
+        //if no match, there is an error. Return black
+        System.out.println("CLIENT NOT RECOGNIZED");
+        return Color.BLACK;
+    }
+
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             // System.out.println("boardCurrentStatus[" + row + "][" + col + "] = " + boardCurrentStatus[row][col]);
