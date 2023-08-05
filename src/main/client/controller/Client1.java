@@ -142,6 +142,8 @@ public class Client1 extends JFrame {
             int isFilled = 0;
             if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
+                clientPlayer.getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
+                clientPlayer.incNumFilledCells();
             } else { // if not filled, clear cell
                 clientPlayer.getColoredArea()[row][col] = 0;
 
@@ -155,7 +157,6 @@ public class Client1 extends JFrame {
                     }
                 }
             }
-            clientPlayer.getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
@@ -235,6 +236,7 @@ public class Client1 extends JFrame {
                     ObjectInputStream in = new ObjectInputStream(client.getInputStream());
                     UpdatePacket update = (UpdatePacket)in.readObject();
                     
+                    // This is pixel information from the sendPixelInfoListToServer function but from another client
                     int currentRow = update.getData(0);
                     int currentCol = update.getData(1);
                     int currentClientID = update.getData(2);
@@ -242,7 +244,6 @@ public class Client1 extends JFrame {
                     int currentY = update.getData(4);
                     int currentIsFilled = update.getData(5);
 
-                    // This isn't used yet, but it's here for future use
                     update = (UpdatePacket)in.readObject();
                     int winner = update.getData(0);
                     
@@ -272,8 +273,13 @@ public class Client1 extends JFrame {
 
                         System.out.println("Current Winner ID: " + winner);
 
+                        // winner = -2 means game is still going
+                        // winner = -1 means draw
+                        // winner = 0 means player 0 wins
+                        // winner = 1 means player 1 wins
+                        // winner = n means player n wins
                         // announce winner
-                        if (winner >= -1 && winner != 0 && winner <= 2 && !isGameTerminated) {
+                        if (winner > -2 && winner < Settings.MAX_PLAYERS && !isGameTerminated) {
                             isGameTerminated = true;
                             if (winner == clientID) {
                                 printGameResult("You win!");

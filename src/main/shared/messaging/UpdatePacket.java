@@ -12,6 +12,19 @@ public class UpdatePacket implements Serializable {
     private int size;
     private int[] data;
 
+    // If data type is 0
+    // size = 6 ints
+    // data[0] = cellRow
+    // data[1] = cellCol
+    // data[2] = clientSource
+    // data[3] = currentX pixel
+    // data[4] = currentY pixel
+    // data[5] = currentIsFilled
+
+    // If data type is 2
+    // size = 1 int
+    // data[0] = winnerID
+
     // Once the type and data is set, it cannot be modified again by any clients
     public UpdatePacket(int type, int size, int[] data) {
         this.type = type;

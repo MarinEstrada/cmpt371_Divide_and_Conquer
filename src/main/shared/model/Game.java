@@ -66,6 +66,31 @@ public class Game implements Serializable{
         }
     }
 
+    public int checkWinner() {
+        // check if the board is full
+        for (int row = 0; row < Settings.NUM_CELLS; row++) {
+            for (int col = 0; col < Settings.NUM_CELLS; col++) {
+                int currOwnerID = getGameBoard().getCell(row, col).getOwnerID();
+                if (currOwnerID == 0 || currOwnerID == -1) { 
+                    // the board is not full, no winner yet
+                    return -2;
+                }
+            }
+        }
+
+        int winnerID = -1;
+        int numWinnerCells = -1;
+        // the board is full, see who owns the highest number of cells
+        for (int i = 0; i < Settings.MAX_PLAYERS; i++) {
+            if (getPlayer(i).getNumFilledCells() > numWinnerCells) {
+                winnerID = i;
+                numWinnerCells = getPlayer(i).getNumFilledCells();
+            }
+        }
+
+        return winnerID;
+    }
+
     // Update the game state based on a player's move
     public void makeMove(int row, int col, Player player) throws IOException {
         if (isValidMove(row, col)) {

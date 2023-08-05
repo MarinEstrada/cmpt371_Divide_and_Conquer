@@ -23,7 +23,12 @@ public class Player implements Serializable {
     // The list of pixels that every player is known to have colored
     private final List<int[]> pixelInfoList;
 
+    // The area that the player has colored
     private int[][] coloredArea;
+    private int numFilledCells;
+
+    // The pixels that the player has colored
+    // [Cell row][Cell col][Pixel X][Pixel Y]
     private boolean[][][][] coloredPixels;
 
     public Player(int clientID, int num_cells, int BOARD_SIZE) {
@@ -31,9 +36,39 @@ public class Player implements Serializable {
         this.pixelInfoList = new ArrayList<>();
     }
 
+    // *********************
     // Accessor Functions
+    // *********************
+
+    // The player's ID
     public int getId() {
         return this.clientID;
+    }
+
+    public int getNumFilledCells() {
+        for (int row = 0; row < this.coloredArea.length; row++) {
+            for (int col = 0; col < this.coloredArea.length; col++) {
+                if (this.coloredArea[row][col] != 0) {
+                    this.numFilledCells++;
+                }
+            }
+        }
+        return this.numFilledCells;
+    }
+
+    // The socket or connection that the server uses to communicate with the client
+    public Socket getServerAccessSocket() {
+        return this.clientSocket;
+    }
+
+    // The communication line that the server sends messages to the client on
+    public ObjectInputStream getObjectInputStream() {
+        return this.objectIn;
+    }
+
+    // The communication line that the client sends messages to the server on
+    public ObjectOutputStream getObjectOutputStream() {
+        return this.objectOut;
     }
 
     public List<int[]> getPixelInfoList() {
@@ -48,12 +83,35 @@ public class Player implements Serializable {
         return this.coloredPixels;
     }
 
+    // *********************
+    // Accessor Functions
+    // *********************
+
+    // *********************
     // Setting Functions
+    // *********************
+
     public void setColoredPixels(boolean[][][][] coloredPixels) {
         this.coloredPixels = coloredPixels;
+    }
+
+    public void updateColoredPixels(int row, int col, int currentX, int currentY, int currentIsFilled) {
+        this.coloredPixels[row][col][currentX][currentY] = currentIsFilled == 1;
+    }
+
+    public void updateColoredArea(int row, int col, int currentIsFilled) {
+        this.coloredArea[row][col] = currentIsFilled;
     }
 
     public void setColoredArea(int[][] coloredArea) {
         this.coloredArea = coloredArea;
     }
+
+    public void incNumFilledCells() {
+        this.numFilledCells++;
+    }
+
+    // *********************
+    // Setting Functions
+    // *********************
 }

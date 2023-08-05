@@ -6,6 +6,20 @@
     "configurations": [
       {
         "type": "java",
+        "name": "Client1",
+        "request": "launch",
+        "mainClass": "main.client.controller.Client1",
+        "projectName": "cmpt371_Divide_and_Conquer_1eea108e"
+      },
+      {
+        "type": "java",
+        "name": "Server1",
+        "request": "launch",
+        "mainClass": "main.server.controller.Server1",
+        "projectName": "cmpt371_Divide_and_Conquer_1eea108e"
+      },
+      {
+        "type": "java",
         "name": "Server",
         "request": "launch",
         "mainClass": "main.server.controller.Server",
