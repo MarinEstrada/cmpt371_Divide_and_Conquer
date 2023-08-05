@@ -12,7 +12,7 @@ public class Client extends JFrame {
     private int clientID;
     private DataOutputStream out;
     private DataInputStream in;
-    
+
     private final List<int[]> pixelInfoList = new ArrayList<>();
     private JPanel boardPanel;
     private JFrame startScreen;
@@ -252,7 +252,7 @@ public class Client extends JFrame {
 
             out = new DataOutputStream(client.getOutputStream());
             in = new DataInputStream(client.getInputStream());
-            
+
             clientID = in.readInt();
             System.out.println("You are client #" + clientID + ", you are connected to the server!");
             if (clientID == 1) {
@@ -281,12 +281,16 @@ public class Client extends JFrame {
 
             // send the string to server
             out.writeUTF(tokenizedMessage.toString());
-            
+
             out.flush(); // Flush the output stream to ensure all data is sent
             pixelInfoList.clear(); // Clear the pixelInfoList
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private String extractNumericDigits(String input) {
+        return input.replaceAll("[^0-9]", "");
     }
 
     private class SyncServer implements Runnable {
@@ -303,8 +307,8 @@ public class Client extends JFrame {
                         }
                         clientGUI(clientID);
                         isGameStarted = true;
-                    } 
-                    
+                    }
+
                     // if the game is started, read the tokenized message
                     else {
                         // tokenize the string
@@ -314,11 +318,11 @@ public class Client extends JFrame {
                         // read the token if it is valid
                         if (lastToken.length == 6) {
                             // System.out.println("lastToken: " + lastToken[0] + ", " + lastToken[1] + ", " + lastToken[2] + ", " + lastToken[3] + ", " + lastToken[4] + ", " + lastToken[5]);
-                            int currentRow = Integer.parseInt(lastToken[0]);
-                            int currentCol = Integer.parseInt(lastToken[1]);
-                            int currentClientID = Integer.parseInt(lastToken[2]);
-                            int currentX = Integer.parseInt(lastToken[3]);
-                            int currentY = Integer.parseInt(lastToken[4]);
+                            int currentRow = Integer.parseInt(extractNumericDigits(lastToken[0]));
+                            int currentCol = Integer.parseInt(extractNumericDigits(lastToken[1]));
+                            int currentClientID = Integer.parseInt(extractNumericDigits(lastToken[2]));
+                            int currentX = Integer.parseInt(extractNumericDigits(lastToken[3]));
+                            int currentY = Integer.parseInt(extractNumericDigits(lastToken[4]));
                             int currentIsFilled = Integer.parseInt(lastToken[5]);
 
                             System.out.println("currentClientID: " + currentClientID + "is drawing on " + currentRow + ", " + currentCol + " at " + currentX + ", " + currentY + " with isFilled: " + currentIsFilled);

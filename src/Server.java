@@ -32,7 +32,7 @@ public class Server {
 
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
                 DataInputStream in = new DataInputStream(client.getInputStream());
-                
+
                 out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
