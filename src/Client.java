@@ -8,18 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Client extends JFrame {
-    private Socket client;
-    private int clientID;
-    private DataOutputStream out;
-    private DataInputStream in;
+    private Socket client; // the client socket
+    private int clientID; // the client number
+    private DataOutputStream out; // the output stream
+    private DataInputStream in; // the input stream
 
-    private final List<int[]> pixelInfoList = new ArrayList<>();
-    private JPanel boardPanel;
-    private JFrame startScreen;
-    private int[][] board;
-    private int[][] boardCurrentStatus;
-    private int[][] coloredArea;
-    private boolean[][][][] coloredPixels;
+    private final List<int[]> pixelInfoList = new ArrayList<>(); // the list of pixels to be sent to the server
+    private JPanel boardPanel; // the board panel
+    private JFrame startScreen; // the start screen
+    private int[][] board; // the board that stores the isFilled status of each cell
+    private int[][] boardCurrentStatus; // the board that stores who is filling each cell
+    private int[][] coloredArea; // the board that stores the colored area in each cell
+    private boolean[][][][] coloredPixels; // the board that stores the colored pixels in each cell
 
     private boolean isMouseInsideCell = false;
     private boolean isGameStarted = false;
@@ -34,6 +34,7 @@ public class Client extends JFrame {
     private static final Color CLIENT1_COLOR = Color.PINK; // the color for client 1
     private static final Color CLIENT2_COLOR = Color.GRAY; // the color for client 2
 
+    // GUI: start screen
     private void showStartScreen() {
         startScreen = new JFrame();
         startScreen.setTitle("Waiting for Player #2");
@@ -49,6 +50,7 @@ public class Client extends JFrame {
         startScreen.setVisible(true);
     }
 
+    // GUI: board
     private void clientGUI(int clientID) {
         // Initialize the board
         board = new int[NUM_CELLS][NUM_CELLS];
@@ -91,6 +93,23 @@ public class Client extends JFrame {
         setVisible(true);
     }
 
+    // GUI: set the color of the brush
+    private Color setBrushColor(){
+        if(clientID == 1) return CLIENT1_COLOR;
+        else if(clientID == 2) return CLIENT2_COLOR;
+
+        //if no match, there is an error. Return black
+        System.out.println("CLIENT NOT RECOGNIZED");
+        return Color.BLACK;
+    }
+
+    // GUI: print game result
+    private void printGameResult(String result) {
+        JOptionPane.showMessageDialog(this, result);
+        System.exit(0);
+    }
+
+    // Operation: update the board
     private void updateBoard() {
         for (int i = 0; i < NUM_CELLS; i++) {
             for (int j = 0; j < NUM_CELLS; j++) {
@@ -100,7 +119,7 @@ public class Client extends JFrame {
                 final int row = i;
                 final int col = j;
 
-                // Add a MouseListener to the JPanel (for the first click)
+                // Add a MouseListener to the JPanel (for clicking, releasing, and exiting)
                 cell.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mousePressed(MouseEvent e) {
@@ -137,6 +156,7 @@ public class Client extends JFrame {
         }
     }
 
+    // Operation: let go feature
     private void checkThreshold(JPanel cell, int row, int col, int x, int y) {
         int cellWidth = cell.getWidth();
         int cellHeight = cell.getHeight();
@@ -161,25 +181,16 @@ public class Client extends JFrame {
                     }
                 }
             }
-            pixelInfoList.add(new int[]{row, col, belongsTo, x, y, isFilled});
+            pixelInfoList.add(new int[]{row, col, belongsTo, x, y, isFilled}); // add pixel info to list
         }
     }
 
-    private Color setBrushColor(){
-        if(clientID == 1) return CLIENT1_COLOR;
-        else if(clientID == 2) return CLIENT2_COLOR;
-
-        //if no match, there is an error. Return black
-        System.out.println("CLIENT NOT RECOGNIZED");
-        return Color.BLACK;
-    }
-
+    // Operation: paint cell
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             // System.out.println("boardCurrentStatus[" + row + "][" + col + "] = " + boardCurrentStatus[row][col]);
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
-            int cellArea = cellWidth * cellHeight;
 
             Color brushColor = clientID == 1 ? CLIENT1_COLOR : CLIENT2_COLOR;
 
@@ -217,11 +228,7 @@ public class Client extends JFrame {
         }
     }
 
-    private void printGameResult(String result) {
-        JOptionPane.showMessageDialog(this, result);
-        System.exit(0);
-    }
-
+    // Operation: check if there is a winner
     private int checkWinner() {
         // check if the board is full
         for (int row = 0; row < NUM_CELLS; row++) {
@@ -254,6 +261,7 @@ public class Client extends JFrame {
         }
     }
 
+    // Networking: connect to server
     public void connectServer() {
         try {
             client = new Socket("localhost", 7070);
@@ -273,6 +281,7 @@ public class Client extends JFrame {
         }
     }
 
+    // Networking: send pixel info list to server
     private void sendPixelInfoListToServer() {
         try {
             // save each pixel info to a string
@@ -297,10 +306,12 @@ public class Client extends JFrame {
         }
     }
 
+    // Networking: filter the message from server
     private String extractNumericDigits(String input) {
         return input.replaceAll("[^0-9]", "");
     }
 
+    // Networking: receive message from server
     private class SyncServer implements Runnable {
         public void run() {
             try {
@@ -381,6 +392,7 @@ public class Client extends JFrame {
         }
     }
 
+    // Networking: close socket
     private void closeSocket() {
         try {
             if (client != null) {
@@ -394,11 +406,12 @@ public class Client extends JFrame {
         }
     }
 
+    // Main
     public static void main(String[] args) throws IOException {
-        Client client = new Client();
-        client.connectServer();
+        Client client = new Client(); // Create a client object
+        client.connectServer(); // Connect to the server
 
-        new Thread(client.new SyncServer()).start();
+        new Thread(client.new SyncServer()).start(); // Start a thread for receiving messages from the server
 
         // Periodically send pixelInfoList to server
         Timer timer = new Timer(10, e -> {

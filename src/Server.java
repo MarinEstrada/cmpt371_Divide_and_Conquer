@@ -9,11 +9,11 @@ public class Server {
     private DataOutputStream out1;
     private DataOutputStream out2;
 
-    private int numClients;
+    private int numClients; // the number of clients connected to the server
     private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
     public void newServer() {
-        numClients = 0;
+        numClients = 0; // no clients connected yet
 
         try {
             server = new ServerSocket(7070);
@@ -27,25 +27,32 @@ public class Server {
     public void connectClients() {
         try {
             while (numClients < MAX_CLIENTS) {
+                // accept the client connection
                 Socket client = server.accept();
+
+                // increment the number of clients
                 numClients++;
 
+                // create the input and output streams
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
                 DataInputStream in = new DataInputStream(client.getInputStream());
 
+                // send the client number to the client
                 out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
-                if (numClients == 1) {
+                if (numClients == 1) { // first client
                     client1 = client;
                     out1 = out;
-                } else {
+                } else { // second client
                     client2 = client;
                     out2 = out;
 
+                    // send the game start message to both clients: initialize the start screen
                     sendGameStartMessage();
                 }
 
+                // create a new thread to handle the client
                 new Thread(new SyncClients(in)).start();
             }
         } catch (IOException e) {
@@ -54,6 +61,7 @@ public class Server {
         }
     }
 
+    // send the game start message to both clients: initialize the start screen
     private void sendGameStartMessage() {
         if (client1 != null && client2 != null) {
             try {
@@ -68,21 +76,22 @@ public class Server {
         }
     }
 
+    // broadcast the update to both clients
     private void broadcastUpdate(String str) {
         if (client1 != null && client2 != null) {
             try {
-                //write back
-                out1.writeUTF(str);
-                out2.writeUTF(str);
+                out1.writeUTF(str); // send the update to client 1
+                out2.writeUTF(str); // send the update to client 2
 
-                out1.flush();
-                out2.flush();
+                out1.flush(); // flush the output stream
+                out2.flush(); // flush the output stream
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    // a thread to handle the client
     private class SyncClients implements Runnable {
         private DataInputStream in;
 
@@ -107,6 +116,7 @@ public class Server {
         }
     }
 
+    // close the server
     private void closeServer() {
         try {
             if (server != null) {
@@ -124,9 +134,9 @@ public class Server {
     }
 
     public static void main(String[] args) throws IOException {
-        Server server = new Server();
-        server.newServer();
-        server.connectClients();
+        Server server = new Server(); // create a new server
+        server.newServer(); // start the server
+        server.connectClients(); // connect the clients
 
         // close the server
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
