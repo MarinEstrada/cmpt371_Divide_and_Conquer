@@ -16,9 +16,9 @@ public class Player implements Serializable {
     private final int clientID;
     
     // Networking variables
-    Socket clientSocket;
-    ObjectInputStream objectIn;
-    ObjectOutputStream objectOut;
+    private Socket clientSocket;
+    private ObjectInputStream objectIn;
+    private ObjectOutputStream objectOut;
 
     // The list of pixels that every player is known to have colored
     private final List<int[]> pixelInfoList;
@@ -109,6 +109,18 @@ public class Player implements Serializable {
 
     public void incNumFilledCells() {
         this.numFilledCells++;
+    }
+
+    public void setServerAccessSocket(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+    }
+
+    public void setObjectInputStream(ObjectInputStream objectIn) {
+        this.objectIn = objectIn;
+    }
+
+    public void setObjectOutputStream(ObjectOutputStream objectOut) {
+        this.objectOut = objectOut;
     }
 
     // *********************

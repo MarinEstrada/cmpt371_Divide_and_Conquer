@@ -12,7 +12,6 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 
 public class Client1 extends JFrame {
-    private Socket client;
     private int clientID;
     private Player clientPlayer;
 
@@ -29,8 +28,7 @@ public class Client1 extends JFrame {
     // This is for connecting to the server
     public void connectServer() {
         try {
-            client = new Socket("localhost", 7070);
-
+            Socket client = new Socket("localhost", 7070);
             System.out.println("Got to line 69");
 
             ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
@@ -49,6 +47,12 @@ public class Client1 extends JFrame {
                 clientPlayer = new Player(clientID, Settings.NUM_CELLS, Settings.BOARD_SIZE);
                 game.addPlayer(clientPlayer);
             }
+
+            // These fields don't need to be updated at the server side in its game state because it is only 
+            // used for sending and receiving information at the client side. The server doesn't need it
+            clientPlayer.setServerAccessSocket(client);
+            clientPlayer.setObjectInputStream(in);
+            clientPlayer.setObjectOutputStream(out);
 
             System.out.println("You are client #" + clientID + ", you are connected to the server!");
             if (clientID == 1) {
@@ -142,7 +146,6 @@ public class Client1 extends JFrame {
             int isFilled = 0;
             if (clientPlayer.getColoredArea()[row][col] >= cellArea * Settings.COLOR_THRESHOLD) { // if filled
                 isFilled = clientID;
-                clientPlayer.getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
                 clientPlayer.incNumFilledCells();
             } else { // if not filled, clear cell
                 clientPlayer.getColoredArea()[row][col] = 0;
@@ -157,19 +160,31 @@ public class Client1 extends JFrame {
                     }
                 }
             }
+            clientPlayer.getPixelInfoList().add(new int[]{row, col, 0, x, y, isFilled});
         }
     }
 
     private void paintCell(JPanel cell, int row, int col, int x, int y) {
         int currOwnerID = game.getGameBoard().getCell(row, col).getOwnerID();
 
-        if (currOwnerID == 0 || currOwnerID == -1) {
+        if (currOwnerID == -1) {
             int cellWidth = cell.getWidth();
             int cellHeight = cell.getHeight();
             int cellArea = cellWidth * cellHeight;
 
-            Color brushColor = clientID == 1 ? Settings.CLIENT1_COLOR : Settings.CLIENT2_COLOR;
-
+            Color brushColor = null;
+            if (clientID == 0) {
+                brushColor = Settings.CLIENT1_COLOR;
+            } else if (clientID == 1) {
+                brushColor = Settings.CLIENT2_COLOR;
+            } else if (clientID == 2) {
+                brushColor = Settings.CLIENT3_COLOR;
+            } else if (clientID == 3) {
+                brushColor = Settings.CLIENT4_COLOR;
+            } else {
+                brushColor = Color.white;
+            }
+            
             // Draw on the JPanel (for display purposes)
             Graphics boardImage = cell.getGraphics();
             boardImage.setColor(brushColor);
@@ -215,7 +230,7 @@ public class Client1 extends JFrame {
     private void sendPixelInfoListToServer() {
         try {
             // Send each pixel information to the server
-            ObjectOutputStream out = new ObjectOutputStream(client.getOutputStream());
+            ObjectOutputStream out = new ObjectOutputStream(clientPlayer.getServerAccessSocket().getOutputStream());
 
             for (int[] pixelInfo : clientPlayer.getPixelInfoList()) {
                 UpdatePacket packet = new UpdatePacket(0, 6, pixelInfo);
@@ -233,7 +248,7 @@ public class Client1 extends JFrame {
             try {
                 while (true) {
                     // Read the information from the server (Another client sent info and the server is relaying it back to you)
-                    ObjectInputStream in = new ObjectInputStream(client.getInputStream());
+                    ObjectInputStream in = new ObjectInputStream(clientPlayer.getServerAccessSocket().getInputStream());
                     UpdatePacket update = (UpdatePacket)in.readObject();
                     
                     // This is pixel information from the sendPixelInfoListToServer function but from another client

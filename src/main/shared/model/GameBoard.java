@@ -14,7 +14,7 @@ public class GameBoard implements Serializable {
         board = new Cell[NUM_CELLS][NUM_CELLS];
         for (int row = 0; row < NUM_CELLS; row++) {
             for (int col = 0; col < NUM_CELLS; col++) {
-                board[row][col] = new Cell(row, col, 0);
+                board[row][col] = new Cell(row, col, -1);
             }
         }
     }
