@@ -129,7 +129,7 @@ public class Client extends JFrame {
 
                     @Override
                     public void mouseReleased(MouseEvent e) {
-                        checkThreshold(cell, row, col, e.getX(), e.getY());
+                        checkThreshold(cell, row, col, e.getX(), e.getY(), false);
                         isMouseInsideCell = false;
                     }
 
@@ -145,7 +145,7 @@ public class Client extends JFrame {
                         if (isMouseInsideCell) {
                             paintCell(cell, row, col, e.getX(), e.getY());
                         } else {
-                            checkThreshold(cell, row, col, e.getX(), e.getY());
+                            checkThreshold(cell, row, col, e.getX(), e.getY(), true);
                         }
                     }
                 });
@@ -157,7 +157,7 @@ public class Client extends JFrame {
     }
 
     // Operation: let go feature
-    private void checkThreshold(JPanel cell, int row, int col, int x, int y) {
+    private void checkThreshold(JPanel cell, int row, int col, int x, int y, boolean mouseExitedCell) {
         int cellWidth = cell.getWidth();
         int cellHeight = cell.getHeight();
         int cellArea = cellWidth * cellHeight;
@@ -166,7 +166,7 @@ public class Client extends JFrame {
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             int isFilled = 0;
             int belongsTo = clientID;
-            if (coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) { // if filled
+            if ((coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) && !mouseExitedCell) { // if filled
                 isFilled = clientID;
             } else { // if not filled, clear cell
                 coloredArea[row][col] = 0;
@@ -265,6 +265,7 @@ public class Client extends JFrame {
     public void connectServer() {
         try {
             client = new Socket("localhost", 7070);
+            // client = new Socket("207.23.207.26", 7070);
 
             out = new DataOutputStream(client.getOutputStream());
             in = new DataInputStream(client.getInputStream());
