@@ -248,74 +248,83 @@ public class Client1 extends JFrame {
                     // Read the information from the server (Another client sent info and the server is relaying it back to you)          
                     UpdatePacket update = (UpdatePacket)clientPlayer.getObjectInputStream().readObject();
                     
-                    // This is pixel information from the sendPixelInfoListToServer function but from another client
-                    int currentRow = update.getData(0);
-                    int currentCol = update.getData(1);
-                    int currentClientID = update.getData(2);
-                    int currentX = update.getData(3);
-                    int currentY = update.getData(4);
-                    int currentIsFilled = update.getData(5);
+                    if (update.getType() == 0) {
+                        System.out.println("SYNC Received pixelInfoList from server");
 
-                    update = (UpdatePacket)clientPlayer.getObjectInputStream().readObject();
-                    int winner = update.getData(0);
-                    
-                    // Update the game board
-                    game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
-
-                    SwingUtilities.invokeLater(() -> {
-                        // draw on board/cell
-                        JPanel cell = (JPanel) boardPanel.getComponent(currentRow * Settings.NUM_CELLS + currentCol);
-                        Graphics boardImage = cell.getGraphics();
-
-                        Color brushColor = null;
-                        if (currentClientID == 0) {
-                            brushColor = Settings.CLIENT1_COLOR;
-                        } else if (clientID == 1) {
-                            brushColor = Settings.CLIENT2_COLOR;
-                        } else if (clientID == 2) {
-                            brushColor = Settings.CLIENT3_COLOR;
-                        } else if (clientID == 3) {
-                            brushColor = Settings.CLIENT4_COLOR;
-                        } else {
-                            brushColor = Color.white;
-                        }
-
-                        boardImage.setColor(brushColor);
-                        boardImage.fillRect(currentX, currentY, Settings.BRUSH_SIZE, Settings.BRUSH_SIZE);
-
+                            // This is pixel information from the sendPixelInfoListToServer function but from another client
+                        int currentRow = update.getData(0);
+                        int currentCol = update.getData(1);
+                        int currentClientID = update.getData(2);
+                        int currentX = update.getData(3);
+                        int currentY = update.getData(4);
+                        int currentIsFilled = update.getData(5);
                         
-                        // if player released before threshold, clear cell
-                        if (currentIsFilled == -1) {
-                            System.out.println("SYNC Removing drawnlines");
-                            cell.removeAll();
-                            cell.revalidate();
-                            cell.repaint();
-                        }
-                        
-                        // fill cell if passed threshold
-                        if (currentIsFilled != 0 && currentIsFilled != -1) {
-                            boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
-                        }
+                        // Update the game board
+                        game.getGameBoard().setCell(currentRow, currentCol, currentIsFilled);
 
-                        System.out.println("Current Winner ID: " + winner);
+                        SwingUtilities.invokeLater(() -> {
+                            // draw on board/cell
+                            JPanel cell = (JPanel) boardPanel.getComponent(currentRow * Settings.NUM_CELLS + currentCol);
+                            Graphics boardImage = cell.getGraphics();
 
-                        // winner = -2 means game is still going
-                        // winner = -1 means draw
-                        // winner = 0 means player 0 wins
-                        // winner = 1 means player 1 wins
-                        // winner = n means player n wins
-                        // announce winner
-                        if (winner > -2 && winner < Settings.MAX_PLAYERS && !isGameTerminated) {
-                            isGameTerminated = true;
-                            if (winner == clientID) {
-                                printGameResult("You win!");
-                            } else if (winner == -1) {
-                                printGameResult("Draw!");
+                            Color brushColor = null;
+                            if (currentClientID == 0) {
+                                brushColor = Settings.CLIENT1_COLOR;
+                            } else if (clientID == 1) {
+                                brushColor = Settings.CLIENT2_COLOR;
+                            } else if (clientID == 2) {
+                                brushColor = Settings.CLIENT3_COLOR;
+                            } else if (clientID == 3) {
+                                brushColor = Settings.CLIENT4_COLOR;
                             } else {
-                                printGameResult("You lose!");
+                                brushColor = Color.white;
+                            }
+
+                            boardImage.setColor(brushColor);
+                            boardImage.fillRect(currentX, currentY, Settings.BRUSH_SIZE, Settings.BRUSH_SIZE);
+
+                            
+                            // if player released before threshold, clear cell
+                            if (currentIsFilled == -1) {
+                                System.out.println("SYNC Removing drawnlines");
+                                cell.removeAll();
+                                cell.revalidate();
+                                cell.repaint();
+                            }
+
+                                // fill cell if passed threshold
+                            if (currentIsFilled != 0 && currentIsFilled != -1) {
+                                boardImage.fillRect(0, 0, cell.getWidth(), cell.getHeight());
+                            }
+                        });
+
+                        } else if (update.getType() == 1) {
+                            System.out.println("SYNC Received game state from server");
+                        } else if (update.getType() == 2) {
+                            System.out.println("SYNC Received winner info from server");
+                            int winner = update.getData(0);
+
+                            System.out.println("Current Winner ID: " + winner);
+
+                            // winner = -2 means game is still going
+                            // winner = -1 means draw
+                            // winner = 0 means player 0 wins
+                            // winner = 1 means player 1 wins
+                            // winner = n means player n wins
+                            // announce winner
+                            if (winner > -2 && winner < Settings.MAX_PLAYERS && !isGameTerminated) {
+                                isGameTerminated = true;
+                                if (winner == clientID) {
+                                    printGameResult("You win!");
+                                } else if (winner == -1) {
+                                    printGameResult("Draw!");
+                                } else {
+                                    printGameResult("You lose!");
+                                }
                             }
                         }
-                    });
+                    
+
                 }
             } catch (IOException ex) {
                 System.out.println("IO exception: In SyncServer");
