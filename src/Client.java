@@ -166,7 +166,7 @@ public class Client extends JFrame {
         if ((board[row][col] == 0 || board[row][col] == -1) && (boardCurrentStatus[row][col] == clientID || boardCurrentStatus[row][col] == 0)) {
             int isFilled = 0;
             int belongsTo = clientID;
-            if ((coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) && !mouseExitedCell) { // if filled
+            if ((coloredArea[row][col] >= cellArea * COLOR_THRESHOLD) && !mouseExitedCell) { // if legally filled
                 isFilled = clientID;
             } else { // if not filled, clear cell
                 coloredArea[row][col] = 0;
