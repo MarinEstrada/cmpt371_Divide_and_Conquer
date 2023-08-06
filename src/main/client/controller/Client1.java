@@ -266,7 +266,21 @@ public class Client1 extends JFrame {
                         // draw on board/cell
                         JPanel cell = (JPanel) boardPanel.getComponent(currentRow * Settings.NUM_CELLS + currentCol);
                         Graphics boardImage = cell.getGraphics();
-                        boardImage.setColor(currentClientID == 1 ? Settings.CLIENT1_COLOR : Settings.CLIENT2_COLOR);
+
+                        Color brushColor = null;
+                        if (currentClientID == 0) {
+                            brushColor = Settings.CLIENT1_COLOR;
+                        } else if (clientID == 1) {
+                            brushColor = Settings.CLIENT2_COLOR;
+                        } else if (clientID == 2) {
+                            brushColor = Settings.CLIENT3_COLOR;
+                        } else if (clientID == 3) {
+                            brushColor = Settings.CLIENT4_COLOR;
+                        } else {
+                            brushColor = Color.white;
+                        }
+
+                        boardImage.setColor(brushColor);
                         boardImage.fillRect(currentX, currentY, Settings.BRUSH_SIZE, Settings.BRUSH_SIZE);
 
                         
