@@ -62,9 +62,11 @@ public class Server1 {
                 Player player = new Player(numClients, Settings.NUM_CELLS, Settings.BOARD_SIZE);
                 game.addPlayer(player);
 
+                // Step 6
                 GamePacket initialGameState = new GamePacket(numClients, game);
                 out.writeObject(initialGameState);
 
+                // Step 8
                 new Thread(new SyncClients(clientAddress)).start();
                 numClients++;
             }

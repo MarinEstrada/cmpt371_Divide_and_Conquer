@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class UpdatePacket implements Serializable {
     // Packet Types
-    // 0 = client to server
+    // 0 = client to server exchange update message
     // 1 = Cell lock message
     // 2 = game over packet
 

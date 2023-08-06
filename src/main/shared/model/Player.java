@@ -34,6 +34,17 @@ public class Player implements Serializable {
     public Player(int clientID, int num_cells, int BOARD_SIZE) {
         this.clientID = clientID;
         this.pixelInfoList = new ArrayList<>();
+
+        // Initialize the colored area in a cell
+        coloredArea = new int[Settings.NUM_CELLS][Settings.NUM_CELLS];
+        for (int i = 0; i < Settings.NUM_CELLS; i++) {
+            for (int j = 0; j < Settings.NUM_CELLS; j++) {
+                coloredArea[i][j] = 0;
+            }
+        }
+
+        // Initialize the colored pixels in a cell
+        coloredPixels = new boolean[Settings.NUM_CELLS][Settings.NUM_CELLS][BOARD_SIZE][BOARD_SIZE];
     }
 
     // *********************

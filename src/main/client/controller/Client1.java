@@ -209,7 +209,7 @@ public class Client1 extends JFrame {
                 }
             }
 
-            System.out.println("coloredArea: " + clientPlayer.getColoredArea()[row][col] + ", cellArea: " + cellArea);
+            // System.out.println("coloredArea: " + clientPlayer.getColoredArea()[row][col] + ", cellArea: " + cellArea);
 
             // // Check if the cell is filled >= threshold
             int isFilled = 0;
@@ -230,13 +230,11 @@ public class Client1 extends JFrame {
     private void sendPixelInfoListToServer() {
         try {
             // Send each pixel information to the server
-            ObjectOutputStream out = new ObjectOutputStream(clientPlayer.getServerAccessSocket().getOutputStream());
-
             for (int[] pixelInfo : clientPlayer.getPixelInfoList()) {
                 UpdatePacket packet = new UpdatePacket(0, 6, pixelInfo);
-                out.writeObject(packet);
+                clientPlayer.getObjectOutputStream().writeObject(packet);
             }
-            out.flush(); // Flush the output stream to ensure all data is sent
+            clientPlayer.getObjectOutputStream().flush(); // Flush the output stream to ensure all data is sent
             clientPlayer.getPixelInfoList().clear(); // Clear the pixelInfoList
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -247,9 +245,8 @@ public class Client1 extends JFrame {
         public void run() {
             try {
                 while (true) {
-                    // Read the information from the server (Another client sent info and the server is relaying it back to you)
-                    ObjectInputStream in = new ObjectInputStream(clientPlayer.getServerAccessSocket().getInputStream());
-                    UpdatePacket update = (UpdatePacket)in.readObject();
+                    // Read the information from the server (Another client sent info and the server is relaying it back to you)          
+                    UpdatePacket update = (UpdatePacket)clientPlayer.getObjectInputStream().readObject();
                     
                     // This is pixel information from the sendPixelInfoListToServer function but from another client
                     int currentRow = update.getData(0);
@@ -259,7 +256,7 @@ public class Client1 extends JFrame {
                     int currentY = update.getData(4);
                     int currentIsFilled = update.getData(5);
 
-                    update = (UpdatePacket)in.readObject();
+                    update = (UpdatePacket)clientPlayer.getObjectInputStream().readObject();
                     int winner = update.getData(0);
                     
                     // Update the game board
