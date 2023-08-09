@@ -11,15 +11,11 @@ public class Server {
     private DataOutputStream out1;
     private DataOutputStream out2;
 
-    private int[][] board;
-    private int numClients;
-
-    private static final int NUM_CELLS = 4; // the number of cells in a row/column
+    private int numClients; // the number of clients connected to the server
     private static final int MAX_CLIENTS = 2; // the maximum number of clients
 
     public void newServer() {
-        numClients = 0;
-        board = new int[NUM_CELLS][NUM_CELLS];
+        numClients = 0; // no clients connected yet
 
         try {
             server = new ServerSocket(7070);
@@ -33,23 +29,33 @@ public class Server {
     public void connectClients() {
         try {
             while (numClients < MAX_CLIENTS) {
+                // accept the client connection
                 Socket client = server.accept();
+
+                // increment the number of clients
                 numClients++;
 
-                DataInputStream in = new DataInputStream(client.getInputStream());
+                // create the input and output streams
                 DataOutputStream out = new DataOutputStream(client.getOutputStream());
+                DataInputStream in = new DataInputStream(client.getInputStream());
+
+                // send the client number to the client
                 out.writeInt(numClients);
                 System.out.println("Client #" + numClients + " has connected to the server!");
 
-                if (numClients == 1) {
+                if (numClients == 1) { // first client
                     client1 = client;
                     out1 = out;
-                } else {
+                } else { // second client
                     client2 = client;
                     out2 = out;
+
+                    // send the game start message to both clients: initialize the start screen
+                    sendGameStartMessage();
                 }
 
-                new Thread(new SyncClients(numClients, in)).start();
+                // create a new thread to handle the client
+                new Thread(new SyncClients(in)).start();
             }
         } catch (IOException e) {
             System.out.println("Accept failed: 7070");
@@ -57,30 +63,12 @@ public class Server {
         }
     }
 
-    private void broadcastUpdate(int row, int col, int clientID, int x, int y, int isFilled) {
+    // send the game start message to both clients: initialize the start screen
+    private void sendGameStartMessage() {
         if (client1 != null && client2 != null) {
             try {
-                // board
-                board[row][col] = isFilled;
-                
-                out1.writeInt(row);
-                out1.writeInt(col);
-                out1.writeInt(clientID);
-                out1.writeInt(x);
-                out1.writeInt(y);
-                out1.writeInt(isFilled);
-
-                out2.writeInt(row);
-                out2.writeInt(col);
-                out2.writeInt(clientID);
-                out2.writeInt(x);
-                out2.writeInt(y);
-                out2.writeInt(isFilled);
-
-                // Check if there is a winner
-                int winner = checkWinner();
-                out1.writeInt(winner);
-                out2.writeInt(winner);
+                out1.writeUTF("start");
+                out2.writeUTF("start");
 
                 out1.flush();
                 out2.flush();
@@ -90,56 +78,39 @@ public class Server {
         }
     }
 
-    private int checkWinner() {
-        // check if the board is full
-        for (int row = 0; row < NUM_CELLS; row++) {
-            for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 0 || board[row][col] == -1) { // the board is not full, no winner yet
-                    return 0;
-                }
-            }
-        }
+    // broadcast the update to both clients
+    private void broadcastUpdate(String str) {
+        if (client1 != null && client2 != null) {
+            try {
+                out1.writeUTF(str); // send the update to client 1
+                out2.writeUTF(str); // send the update to client 2
 
-        // check if there is a winner
-        int client1Count = 0;
-        int client2Count = 0;
-        for (int row = 0; row < NUM_CELLS; row++) {
-            for (int col = 0; col < NUM_CELLS; col++) {
-                if (board[row][col] == 1) {
-                    client1Count++;
-                } else if (board[row][col] == 2) {
-                    client2Count++;
-                }
+                out1.flush(); // flush the output stream
+                out2.flush(); // flush the output stream
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        }
-
-        if (client1Count > client2Count) {
-            return 1;
-        } else if (client1Count < client2Count) {
-            return 2;
-        } else { // draw
-            return -1;
         }
     }
 
+    // a thread to handle the client
     private class SyncClients implements Runnable {
         private DataInputStream in;
 
-        public SyncClients(int clientID, DataInputStream in) {
+        public SyncClients(DataInputStream in) {
             this.in = in;
         }
 
         public void run() {
             try {
                 while (true) {
-                    int row = in.readInt();
-                    int col = in.readInt();
-                    int clientID = in.readInt();
-                    int x = in.readInt();
-                    int y = in.readInt();
-                    int isFilled = in.readInt();
-
-                    broadcastUpdate(row, col, clientID, x, y, isFilled);
+                    // receive the string
+                    String str = in.readUTF();
+                    // if string is empty
+                    if (!str.equals("")) {
+                        System.out.println("Received: " + str);
+                        broadcastUpdate(str);
+                    }
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -147,6 +118,7 @@ public class Server {
         }
     }
 
+    // close the server
     private void closeServer() {
         try {
             if (server != null) {
@@ -158,14 +130,15 @@ public class Server {
                 System.out.println("Server closed.");
             }
         } catch (IOException e) {
+            System.out.println("Could not close server.");
             e.printStackTrace();
         }
     }
 
     public static void main(String[] args) throws IOException {
-        Server server = new Server();
-        server.newServer();
-        server.connectClients();
+        Server server = new Server(); // create a new server
+        server.newServer(); // start the server
+        server.connectClients(); // connect the clients
 
         // close the server
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
